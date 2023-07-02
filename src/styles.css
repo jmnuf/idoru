@@ -93,17 +93,48 @@ button {
   margin-right: 5px;
 }
 
+.pui-removing {
+	position: absolute;
+	left: 5%;
+	top: 1%;
+	transition: transform ease-in 0.35s;
+	transform: translateX(-200%);
+}
+
+.crimson-view {
+	overflow: hidden;
+}
+
 nav {
 	background-color: #2f2f2f;
-	padding-left: 1rem;
-	padding-right: 1rem;
-	width: calc(100% - 2rem);
+	margin: 0;
+	padding: 0;
+	padding-left: 0.15rem;
+	width: calc(100% - 0.15rem);
+}
+
+nav ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+nav li {
+	display: inline-block;
+	background-color: #252525;
+	height: 100%;
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
 }
 
 nav a {
 	color: #24c8db;
+}
+
+nav a:not(.disabled):hover {
+	color: #56eeff;
 }
 
 nav a.disabled {
