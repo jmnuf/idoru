@@ -1,18 +1,15 @@
-import type { Norishre } from "@jmnuf/norishre";
 import { invoke } from "@tauri-apps/api/tauri";
 
-class IndexPage<T extends Norishre<any>> {
+class IndexPage {
 	greeting_name: string;
 	message: string;
-	router: T;
 
-	constructor(router: T) {
-		this.router = router;
+	constructor() {
 		this.greeting_name = "";
 		this.message = "";
 	}
 
-	on_clicked = async (_: unknown, model: IndexPage<T>) => {
+	on_clicked = async (_: unknown, model: IndexPage) => {
 		model.message = await invoke("greet", {
 			name: model.greeting_name,
 		});
@@ -52,6 +49,6 @@ class IndexPage<T extends Norishre<any>> {
 	</div>`;
 }
 
-export function PageModel<T extends Norishre<any>>(router: T) {
-	return new IndexPage(router);
+export function PageModel() {
+	return new IndexPage();
 }
