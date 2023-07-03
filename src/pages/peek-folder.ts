@@ -5,11 +5,9 @@ class PeekFolder {
 	get template() {
 		return PeekFolder.template;
 	}
-	static readonly template = `
-	<div class="container">
+	static readonly template = `<div class="container">
 		<h1>Folder Peeker</h1>
-	</div>
-	`;
+	</div>`;
 }
 
 export function PageModel() {

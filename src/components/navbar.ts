@@ -26,13 +26,11 @@ class Navbar {
 	get template() {
 		return Navbar.template;
 	}
-	static readonly template = `
-	<nav>
-	<ul>
-		<li pui="page_link <=* pages"><\${ page_link === }> </li>
-	</ul>
-	</nav>
-	`;
+	static readonly template = `<nav>
+		<ul>
+			<li pui="page_link <=* pages"><\${ page_link === }> </li>
+		</ul>
+	</nav>`;
 }
 
 export default function (router: Norishre<any>) {

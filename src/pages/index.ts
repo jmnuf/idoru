@@ -21,8 +21,7 @@ class IndexPage<T extends Norishre<any>> {
 	get template() {
 		return IndexPage.template;
 	}
-	static readonly template = `
-	<div class="container">
+	static readonly template = `<div class="container">
 		<h1>Welcome to Idoru!</h1>
 		
 		<div class="row">
@@ -50,8 +49,7 @@ class IndexPage<T extends Norishre<any>> {
 			<button type="button" \${ click @=> on_clicked } >Greet</button>
 		</form>
 		<p \${ === message }>\${ message }</p>
-	</div>
-	`;
+	</div>`;
 }
 
 export function PageModel<T extends Norishre<any>>(router: T) {
