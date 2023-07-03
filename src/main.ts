@@ -2,21 +2,25 @@ import { missNorishre } from "@jmnuf/norishre";
 import { UI } from "@peasy-lib/peasy-ui";
 import Navbar from "./components/navbar";
 import { PageModel as IndexModel } from "./pages/index";
-import { PageModel as PeekerModel } from "./pages/peek-folder";
 
 const norishre = missNorishre({
 	index: {
 		path: "/",
-		model: async () => IndexModel(norishre)
+		model: IndexModel(),
 	},
 	peekFolder: {
 		path: "/peeker",
-		model: async () => PeekerModel()
+		model: async () => {
+			const { PageModel } = await import("./pages/peek-folder");
+			const model = PageModel();
+			model.on_submit(null, model);
+			return model;
+		}
 	}
 });
 const navbar = Navbar(norishre);
-navbar.pages.push(norishre.get_arrow("index", "Home"));
-navbar.pages.push(norishre.get_arrow("peekFolder", "Peeker"));
+navbar.add_page("index", "Home");
+navbar.add_page("peekFolder", "Peeker");
 
 (async function start() {
 	UI.create(document.body, navbar, navbar.template);

@@ -1,14 +1,18 @@
 import type { Norishre } from "@jmnuf/norishre";
 
-class Navbar {
-	router: Norishre<any>;
+class Navbar<T extends Norishre<any>> {
+	router: T;
 	active_page_css_class: string;
 	private _pages: { template: string; target: string; element: HTMLAnchorElement; }[];
 
-	constructor(router: Norishre<any>) {
+	constructor(router: T) {
 		this.router = router;
 		this.active_page_css_class = "active";
 		this._pages = [];
+	}
+
+	add_page(arrow_id: `${Exclude<keyof typeof this.router.quiver, symbol>}`, message: string) {
+		this._pages.push(this.router.get_arrow(arrow_id, message));
 	}
 
 	get pages() {
