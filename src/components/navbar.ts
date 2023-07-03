@@ -2,29 +2,22 @@ import type { Norishre } from "@jmnuf/norishre";
 
 class Navbar {
 	router: Norishre<any>;
+	active_page_css_class: string;
 	private _pages: { template: string; target: string; element: HTMLAnchorElement; }[];
 
 	constructor(router: Norishre<any>) {
 		this.router = router;
+		this.active_page_css_class = "active";
 		this._pages = [];
 	}
 
-	get home_link() {
-		const arrow = this.router.get_arrow("index", "Home");
-		if (window.location.pathname == this.router.arrow_path("index")) {
-			arrow.element?.classList.add("disabled");
-		} else {
-			arrow.element?.classList.remove("disabled");
-		}
-		return arrow;
-	}
-
 	get pages() {
+		const css_class = this.active_page_css_class;
 		for (const arrow of this._pages) {
 			if (window.location.pathname == this.router.arrow_path(arrow.target)) {
-				arrow.element?.classList.add("disabled");
+				arrow.element?.classList.add(css_class);
 			} else {
-				arrow.element?.classList.remove("disabled");
+				arrow.element?.classList.remove(css_class);
 			}
 		}
 		return this._pages;
