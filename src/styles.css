@@ -188,6 +188,16 @@ nav a.disabled {
 	color: #ccc;
 }
 
+ul.left-ul {
+	list-style-type: none;
+	text-align: left;
+	width: 100%;
+}
+
+.w-full {
+	width: 100%;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
