@@ -8,14 +8,12 @@ type FileDesc = {
 };
 
 class PeekFolder {
-	directory: string | undefined;
+	directory: string;
 	descriptors: FileDesc[];
 
 	constructor() {
 		this.directory = "C:/Users/josem/Documents/code/tauri/idoru/src";
 		this.descriptors = [];
-		// @ts-ignore
-		this._on_submit = (e, m) => this.on_submit(e, m);
 	}
 
 	get found_files() {
@@ -38,11 +36,10 @@ class PeekFolder {
 		return PeekFolder.template;
 	}
 	async on_submit(
-		event: SubmitEvent,
+		event: SubmitEvent | null,
 		model: PeekFolder
 	) {
-		console.log(arguments);
-		event.preventDefault();
+		event?.preventDefault();
 		if (!model.directory) {
 			return;
 		}
@@ -63,43 +60,59 @@ class PeekFolder {
 				case "file": {
 					files.push({
 						name, type,
-						short_path: `./${name}`,
+						short_path: name,
 						full_path: `${dir}/${name}`,
 					});
 				} break;
 				case "directory": {
 					directories.push({
 						name, type,
-						short_path: `./${name}/`,
+						short_path: `${name}/`,
 						full_path: `${dir}/${name}`,
 					});
 				} break;
 			}
 		}
+		const prev = (p => {
+			while (p.endsWith("/")) {
+				p = p.substring(0, p.length - 1);
+			}
+			const index = p.lastIndexOf("/");
+			if (index < 0) {
+				return;
+			}
+			p = p.substring(0, index);
+			return p.includes("/") ? p : `${p}/`;
+		})(model.directory);
+		prev && model.descriptors.unshift({
+			name: "..",
+			type: "directory",
+			short_path: "../",
+			full_path: prev,
+		});
+
 		model.descriptors.push(...directories);
 		model.descriptors.push(...files);
 	};
 
 	async on_path_button_clicked(
-		event: PointerEvent,
-		ctx_model: { directory: string, file: FileDesc; },
+		_event: PointerEvent,
+		_bindings: { directory: string, file: FileDesc; },
 		target: HTMLButtonElement,
-		event_type: string,
+		_event_type: string,
 		context: { $parent: { $model: PeekFolder; }; }
 	) {
 		const model = context.$parent.$model;
 		const type = target.dataset.ftype;
-		console.log("Type:", type);
 		if (!type || type != "directory") {
 			return;
 		}
 		const path = target.dataset.fpath;
-		console.log("Path:", path);
 		if (!path) {
 			return;
 		}
 		model.directory = path;
-		// model.on_submit(event, ctx_model, target, event_type, context);
+		await model.on_submit(null, model);
 	}
 
 	static readonly template = `<div class="container">
@@ -108,8 +121,8 @@ class PeekFolder {
 			<input class="w-full" placeholder="Enter a directory..." \${ value <=> directory } />
 			<button type="submit">Peek</button>
 		</form>
-		<div class="row w-full">
-			<ul class="left-ul" \${ === found_files }>
+		<div class="row w-full max-h-full">
+			<ul class="left-ul scroll" \${ === found_files }>
 				<li \${ file <=* descriptors }>
 					<button data-fpath="\${file.full_path}" data-ftype="\${file.type}" \${ click @=> on_path_button_clicked }>
 						\${ file.short_path }
@@ -124,29 +137,4 @@ export function PageModel() {
 	return new PeekFolder();
 }
 
-
-// const result = await read_file_names("C:/Users/josem/Documents/code/tauri/idoru/src");
-// console.log(result);
-
-// async function read_file_names(path: string, files: string[] = [], prefix: string = "") {
-// 	const result = await read_dir(path);
-// 	if (result == null) {
-// 		console.log("Nothing at", path);
-// 		return files;
-// 	};
-// 	for (const desc of result) {
-// 		if (desc[1] == "unknown") {
-// 			continue;
-// 		}
-// 		const name = `${prefix}${desc[0]}`;
-// 		if (desc[1] == "file") {
-// 			files.push(name);
-// 			continue;
-// 		}
-// 		const new_path = `${path}/${name}`;
-// 		const sub_files = await read_file_names(new_path, files, `${name}/`);
-// 		files.push(...sub_files);
-// 	}
-// 	return files;
-// }
 
