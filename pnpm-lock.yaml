@@ -16,8 +16,8 @@ devDependencies:
     specifier: ^1.4.0
     version: 1.4.0
   typescript:
-    specifier: ^4.8.2
-    version: 4.8.2
+    specifier: ^5.1.6
+    version: 5.1.6
   vite:
     specifier: ^4.2.1
     version: 4.2.1
@@ -452,9 +452,9 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /typescript@4.8.2:
-    resolution: {integrity: sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==}
-    engines: {node: '>=4.2.0'}
+  /typescript@5.1.6:
+    resolution: {integrity: sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==}
+    engines: {node: '>=14.17'}
     hasBin: true
     dev: true
 
