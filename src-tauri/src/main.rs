@@ -6,7 +6,10 @@ use std::fs;
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+	if name.to_lowercase() == "idoru" {
+		return String::from("Hey, we're named the same! I'm also called Idoru!");
+	}
+	format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
 #[tauri::command]

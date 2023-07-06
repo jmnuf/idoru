@@ -9,7 +9,8 @@ class IndexPage {
 		this.message = "";
 	}
 
-	on_clicked = async (_: unknown, model: IndexPage) => {
+	on_submit = async (event: SubmitEvent, model: IndexPage) => {
+		event.preventDefault();
 		model.message = await invoke("greet", {
 			name: model.greeting_name,
 		});
@@ -18,10 +19,10 @@ class IndexPage {
 	get template() {
 		return IndexPage.template;
 	}
-	static readonly template = `<div class="container">
+	static readonly template = `<div class="flex flex-col container mx-auto mt-2">
 		<h1>Welcome to Idoru!</h1>
 		
-		<div class="row">
+		<div class="flex justify-center mb-4">
 			<a href="https://vitejs.dev" target="_blank">
 				<img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
 			</a>
@@ -35,15 +36,15 @@ class IndexPage {
 			<a href="https://www.typescriptlang.org/docs" target="_blank">
 				<img
 					src="/src/assets/typescript.svg"
-					class="logo typescript"
+					class="logo"
 					alt="typescript logo"
 				/>
 			</a>
 		</div>
 		
-		<form class="row" id="greet-form">
+		<form class="row mb-2" id="greet-form" \${ submit @=> on_submit }>
 			<input id="greet-input" placeholder="Enter a name..." \${ value <=> greeting_name } />
-			<button type="button" \${ click @=> on_clicked } >Greet</button>
+			<button type="submit" >Greet</button>
 		</form>
 		<p \${ === message }>\${ message }</p>
 	</div>`;

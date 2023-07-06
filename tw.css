@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.logo {
+	/* class="h-24 hover:shadow-lg transition-shadow shadow-[#24c8db]" */
+	@apply h-32;
+	@apply hover:drop-shadow-lg;
+	@apply transition-all;
+	@apply shadow-[#24c8db];
+	@apply p-6;
+}
+
+.row {
+	@apply flex;
+	@apply justify-center;
+}
