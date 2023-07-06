@@ -1,6 +1,6 @@
 import { missNorishre } from "@jmnuf/norishre";
 import { UI } from "@peasy-lib/peasy-ui";
-import Navbar from "./components/navbar";
+import create_navbar from "./components/navbar";
 import { PageModel as IndexModel } from "./pages/index";
 
 const norishre = missNorishre({
@@ -18,14 +18,11 @@ const norishre = missNorishre({
 		}
 	}
 });
-const navbar = Navbar(norishre);
+const navbar = create_navbar(norishre);
 navbar.add_page("index", "Home");
 navbar.add_page("peekFolder", "Peeker");
+UI.create(document.body, navbar, navbar.template);
 
-(async function start() {
-	UI.create(document.body, navbar, navbar.template);
-
-	await norishre.pull_from_quiver("index");
+norishre.pull_from_quiver("index").then(() => {
 	UI.create(document.body, norishre, norishre.template);
-})();
-
+});

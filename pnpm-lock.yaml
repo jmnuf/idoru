@@ -1,9 +1,13 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
   '@jmnuf/norishre':
-    specifier: ^0.2.8
-    version: 0.2.8(@peasy-lib/peasy-ui@0.9.46)
+    specifier: ^0.2.10
+    version: 0.2.10(@peasy-lib/peasy-ui@0.9.46)
   '@peasy-lib/peasy-ui':
     specifier: ^0.9.46
     version: 0.9.46
@@ -222,8 +226,8 @@ packages:
     dev: true
     optional: true
 
-  /@jmnuf/norishre@0.2.8(@peasy-lib/peasy-ui@0.9.46):
-    resolution: {integrity: sha512-U9aPnFXncBJgLCOV5EW9JGzGgUeUGwvBrq53Sg2hDmaglBVsmD/6lvg6Go4OJ+jBAm4Uq46d7RLt5eZcEkcMMA==}
+  /@jmnuf/norishre@0.2.10(@peasy-lib/peasy-ui@0.9.46):
+    resolution: {integrity: sha512-jLMVBKkS0nE9KN+MQ6t4lNFQh//Qee/w/FWcgVtc1h9svL2ax8c4CwyaMTexRfo064H4tLPwh+YKVrzX/0VcbA==}
     peerDependencies:
       '@peasy-lib/peasy-ui': ^0.9.38
     dependencies:

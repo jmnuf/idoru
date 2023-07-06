@@ -1,17 +1,24 @@
 import type { Norishre } from "@jmnuf/norishre";
+import { Quiver, KeyOf } from "@jmnuf/norishre/dist/base-types";
 
-class Navbar<T extends Norishre<any>> {
-	router: T;
+type PageArrowComponent<TQuiver extends Quiver> = {
+	template: string;
+	target: KeyOf<TQuiver>;
+	element: HTMLAnchorElement;
+};
+
+class Navbar<TQuiver extends Quiver> {
+	router: Norishre<TQuiver>;
 	active_page_css_class: string;
-	private _pages: { template: string; target: string; element: HTMLAnchorElement; }[];
+	private _pages: PageArrowComponent<TQuiver>[];
 
-	constructor(router: T) {
+	constructor(router: Norishre<TQuiver>) {
 		this.router = router;
 		this.active_page_css_class = "active";
 		this._pages = [];
 	}
 
-	add_page(arrow_id: `${Exclude<keyof typeof this.router.quiver, symbol>}`, message: string) {
+	add_page(arrow_id: KeyOf<TQuiver>, message: string) {
 		this._pages.push(this.router.get_arrow(arrow_id, message));
 	}
 
@@ -37,6 +44,6 @@ class Navbar<T extends Norishre<any>> {
 	</nav>`;
 }
 
-export default function (router: Norishre<any>) {
-	return new Navbar(router);
+export default function create<T extends Quiver>(router: Norishre<T>) {
+	return new Navbar<T>(router);
 }
