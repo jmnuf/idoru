@@ -85,10 +85,6 @@ form button {
 	margin-bottom: 0;
 }
 
-button {
-  cursor: pointer;
-}
-
 button:hover {
   border-color: #396cd8;
 }
@@ -222,12 +218,6 @@ ul.left-ul {
 	width: 100%;
 }
 
-.w-full {
-	width: 100%;
-}
-.h-full {
-	height: 100%;
-}
 .max-h-full {
 	max-height: 100%;
 	overflow-y: auto;
