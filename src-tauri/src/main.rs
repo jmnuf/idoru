@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::fs;
+use std::{fs, path::Path};
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -49,9 +49,57 @@ fn read_dir(dir_path: &str) -> Option<Vec<(String, String)>> {
 	return Some(dir);
 }
 
+#[tauri::command]
+fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Option<Vec<(String, String)>> {
+	let dir = read_dir(&dir_path);
+	return match dir {
+		None => None,
+		Some(dir) => {
+			let mut dirs:Vec<(String, String)> = Vec::new();
+			let mut list:Vec<_> = dir.iter().filter_map(|(fname, ftype)| {
+				if ftype != "directory" {
+					if fname.contains(search_term) {
+						return Some((fname.clone(), ftype.clone()));
+					} else {
+						return None;
+					}
+				}
+				let dir_path = Path::new(dir_path);
+				let new_path = match Path::join(dir_path, fname).into_os_string().into_string() {
+					Err(_) => return None,
+					Ok(x) => x,
+				};
+				dirs.push((new_path, fname.clone()));
+				return None;
+			}).collect();
+			dirs.iter().for_each(|(path, name)| {
+				let result = search_dir(&path, search_term, show_subpath);
+				if result.is_none() {
+					return;
+				}
+				result.unwrap().iter().for_each(|item| {
+					if !show_subpath {
+						list.push(item.clone());
+						return;
+					}
+					let mut item = item.clone();
+					match Path::join(Path::new(name), &item.0).into_os_string().into_string() {
+						Err(_) => (),
+						Ok(x) => {
+							item.0 = x;
+						},
+					};
+					list.push(item);
+				});
+			});
+			Some(list)
+		}
+	}
+}
+
 fn main() {
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, read_dir])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+	tauri::Builder::default()
+		.invoke_handler(tauri::generate_handler![greet, read_dir, search_dir])
+		.run(tauri::generate_context!())
+		.expect("error while running tauri application");
 }

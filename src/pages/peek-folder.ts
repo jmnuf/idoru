@@ -1,4 +1,4 @@
-import { FileType, read_dir } from "../tauri-api";
+import { FileType, api } from "../tauri-api";
 
 type FileDesc = {
 	name: string;
@@ -10,12 +10,24 @@ type FileDesc = {
 class PeekFolder {
 	base_directory: string;
 	directory: string;
+	private _search_term: string;
 	descriptors: FileDesc[];
 
 	constructor() {
 		this.base_directory = "C:/Users/josem/Documents/code/tauri/idoru/src";
 		this.directory = this.base_directory;
+		this._search_term = "";
 		this.descriptors = [];
+	}
+
+	get search_term() {
+		return this._search_term;
+	}
+	set search_term(v: string) {
+		this._search_term = v;
+		this.on_search_request(null, this).then(() => {
+			console.log(this.descriptors);
+		});
 	}
 
 	get found_files() {
@@ -32,6 +44,34 @@ class PeekFolder {
 			}
 		}
 		return paths;
+	}
+
+	replace_descriptors(desc: FileDesc): void;
+	replace_descriptors(descriptors: FileDesc[]): void;
+	replace_descriptors(...descriptors: FileDesc[]): void;
+	replace_descriptors(x: FileDesc | FileDesc[], ...y: FileDesc[]) {
+		this.descriptors.length = 0;
+		if (Array.isArray(x)) {
+			this.descriptors.push(...x);
+			this.descriptors.map(f => {
+				f.short_path = f.short_path.replaceAll("\\", "/");
+				f.full_path = f.full_path.replaceAll("\\", "/");
+				f.name = f.name.replaceAll("\\", "/");
+			});
+			return;
+		}
+		if (!x) {
+			return;
+		}
+		this.descriptors.push(x);
+		if (y && Array.isArray(y)) {
+			this.descriptors.push(...y);
+		}
+		this.descriptors.map(f => {
+			f.short_path = f.short_path.replaceAll("\\", "/");
+			f.full_path = f.full_path.replaceAll("\\", "/");
+			f.name = f.name.replaceAll("\\", "/");
+		});
 	}
 
 	get template() {
@@ -52,7 +92,7 @@ class PeekFolder {
 		const dir = model.directory.endsWith("/")
 			? model.directory.substring(0, model.directory.length - 1)
 			: model.directory;
-		const descriptors = await read_dir(model.directory);
+		const descriptors = await api.read_dir(model.directory);
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of descriptors) {
@@ -92,15 +132,18 @@ class PeekFolder {
 			p = p.includes("/") ? p : `${p}/`;
 			return p;
 		})(model.directory);
-		prev && model.descriptors.unshift({
+		prev && directories.unshift({
 			name: "..",
 			type: "directory",
 			short_path: "../",
 			full_path: prev,
 		});
 
-		model.descriptors.push(...directories);
-		model.descriptors.push(...files);
+		model.replace_descriptors(
+			...directories,
+			...files
+		);
+		model.directory = dir.lastIndexOf("/") < 0 ? `${dir}/` : dir;
 	};
 
 	async on_path_button_clicked(
@@ -123,13 +166,60 @@ class PeekFolder {
 		await model.on_submit(null, model);
 	}
 
-	static readonly template = `<div class="container">
+	async on_search_request(event: SubmitEvent | null, model: PeekFolder) {
+		event?.preventDefault();
+		if (model.search_term.trim().length < 2) {
+			await model.on_submit(null, model);
+			return;
+		}
+		// console.log(arguments);
+		const dir = model.directory;
+		const qry = model.search_term;
+		console.log("searching in:", dir);
+		console.log("searching for:", qry);
+		const search_result = await api.search_dir(dir, qry);
+		const directories: FileDesc[] = [];
+		const files: FileDesc[] = [];
+		for (const desc of search_result) {
+			const name = desc[0];
+			const type = desc[1];
+			if (type == "unknown") {
+				continue;
+			}
+			switch (type) {
+				case "file": {
+					files.push({
+						name, type,
+						short_path: name,
+						full_path: `${dir}/${name}`,
+					});
+				} break;
+				case "directory": {
+					directories.push({
+						name, type,
+						short_path: `${name}/`,
+						full_path: `${dir}/${name}`,
+					});
+				} break;
+			}
+		}
+		model.replace_descriptors(
+			...directories,
+			...files,
+		);
+	}
+
+	static readonly template = `<div class="container mx-auto max-h-full">
 		<h1>Folder Peeker</h1>
-		<form class="row w-full" \${ submit @=> on_submit }>
+		<form class="row w-full mb-2" \${ submit @=> on_submit }>
 			<input class="w-full" placeholder="Enter a directory..." \${ value <=> directory } />
-			<button type="submit">Peek</button>
+			<button type="submit">👀</button>
 		</form>
-		<div class="row w-full max-h-full">
+		<form class="row w-full mb-4" \${ submit @=> on_search_request }>
+			<input class="w-full" placeholder="Search..." \${ value <=> search_term } />
+			<button type="submit">🔍</button>
+		</form>
+		<div class="row w-full max-h-full scroll">
 			<ul class="left-ul scroll" \${ === found_files }>
 				<li \${ file <=* descriptors }>
 					<button data-fpath="\${file.full_path}" data-ftype="\${file.type}" \${ click @=> on_path_button_clicked }>
