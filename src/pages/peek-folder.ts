@@ -1,18 +1,20 @@
-import { read_dir } from "../tauri-api";
+import { FileType, read_dir } from "../tauri-api";
 
 type FileDesc = {
 	name: string;
 	short_path: string;
 	full_path: string;
-	type: "file" | "directory";
+	type: FileType;
 };
 
 class PeekFolder {
+	base_directory: string;
 	directory: string;
 	descriptors: FileDesc[];
 
 	constructor() {
-		this.directory = "C:/Users/josem/Documents/code/tauri/idoru/src";
+		this.base_directory = "C:/Users/josem/Documents/code/tauri/idoru/src";
+		this.directory = this.base_directory;
 		this.descriptors = [];
 	}
 
@@ -39,7 +41,10 @@ class PeekFolder {
 		event: SubmitEvent | null,
 		model: PeekFolder
 	) {
-		event?.preventDefault();
+		if (event) {
+			event.preventDefault();
+			model.base_directory = model.directory;
+		}
 		if (!model.directory) {
 			return;
 		}
@@ -74,6 +79,7 @@ class PeekFolder {
 			}
 		}
 		const prev = (p => {
+			if (p == model.base_directory) return;
 			while (p.endsWith("/")) {
 				p = p.substring(0, p.length - 1);
 			}
@@ -82,7 +88,9 @@ class PeekFolder {
 				return;
 			}
 			p = p.substring(0, index);
-			return p.includes("/") ? p : `${p}/`;
+			if (p.length < model.base_directory.length) return;
+			p = p.includes("/") ? p : `${p}/`;
+			return p;
 		})(model.directory);
 		prev && model.descriptors.unshift({
 			name: "..",

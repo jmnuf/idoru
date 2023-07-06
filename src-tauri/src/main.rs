@@ -19,15 +19,23 @@ fn read_dir(dir_path: &str) -> Option<Vec<(String, String)>> {
 	let result = result.unwrap();
 	let dir:Vec<(String, String)> = result.into_iter().filter_map(|f| {
 		if f.is_ok() {
-			let result = f.unwrap();
-			let fname:String = result.file_name().into_string().unwrap();
-			let ftype = result.file_type().unwrap();
-			let ftype = if ftype.is_file() {
+			let entry = f.unwrap();
+			let fname:String = match entry.file_name().into_string() {
+				Err(_) => return None,
+				Ok(x) => x,
+			};
+			let meta = match entry.metadata() {
+					Err(_) => return None,
+					Ok(x) => x,
+			};
+			let ftype = if meta.is_file() {
 				String::from("file")
-			} else if ftype.is_dir() {
-				String:: from("directory")
+			} else if meta.is_dir() {
+				String::from("directory")
+			} else if meta.is_symlink() {
+				String::from("symlink")
 			} else {
-				String:: from("unknown")
+				String::from("unknown")
 			};
 			Some((fname, ftype))
 		} else {
