@@ -14,9 +14,23 @@ export async function search_dir(dir_path: string, search_term: string, show_sub
 	});
 }
 
+type DirReadFilters = {
+	searching: string,
+	exclude_files: Array<string>,
+	exclude_paths: Array<string>,
+};
+
+async function filtered_search(dir_path: string, config: DirReadFilters): Promise<DirectoryList> {
+	return await invoke("filtered_dir_read", {
+		dirPath: dir_path,
+		config
+	});
+}
+
 export const api = {
 	read_dir,
 	search_dir,
+	filtered_search,
 };
 
 export type FileType = "file" | "directory" | "symlink" | "unknown";
