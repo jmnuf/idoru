@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@jmnuf/norishre':
-    specifier: ^0.2.10
-    version: 0.2.10(@peasy-lib/peasy-ui@0.9.46)
+    specifier: ^0.3.0
+    version: 0.3.0(@peasy-lib/peasy-ui@0.9.46)
   '@peasy-lib/peasy-ui':
     specifier: ^0.9.46
     version: 0.9.46
@@ -240,8 +240,8 @@ packages:
     dev: true
     optional: true
 
-  /@jmnuf/norishre@0.2.10(@peasy-lib/peasy-ui@0.9.46):
-    resolution: {integrity: sha512-jLMVBKkS0nE9KN+MQ6t4lNFQh//Qee/w/FWcgVtc1h9svL2ax8c4CwyaMTexRfo064H4tLPwh+YKVrzX/0VcbA==}
+  /@jmnuf/norishre@0.3.0(@peasy-lib/peasy-ui@0.9.46):
+    resolution: {integrity: sha512-v8/eRbsu2NK+gqCmnKgOfFjO/z3Kz2aHjxc1CrWAJHeebh13d7isqxXq4TctymwFWWjKc4/e5nQgFZPR0cG/dQ==}
     peerDependencies:
       '@peasy-lib/peasy-ui': ^0.9.38
     dependencies:
