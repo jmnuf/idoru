@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{fs, path::Path};
+use async_recursion::async_recursion;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -13,11 +14,11 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn read_dir(dir_path: &str) -> Option<Vec<(String, String)>> {
+async fn read_dir(dir_path: &str) -> Result<Option<Vec<(String, String)>>, ()> {
 	let result = fs::read_dir(dir_path);
 	if result.is_err() {
 		println!("{:?}", result);
-		return None;
+		return Ok(None);
 	}
 	let result = result.unwrap();
 	let dir:Vec<(String, String)> = result.into_iter().filter_map(|f| {
@@ -46,13 +47,14 @@ fn read_dir(dir_path: &str) -> Option<Vec<(String, String)>> {
 		}
 	}).collect();
 	
-	return Some(dir);
+	return Ok(Some(dir));
 }
 
 #[tauri::command]
-fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Option<Vec<(String, String)>> {
-	let dir = read_dir(&dir_path);
-	return match dir {
+#[async_recursion]
+async fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Result<Option<Vec<(String, String)>>, ()> {
+	let dir = read_dir(&dir_path).await?;
+	let maybe = match dir {
 		None => None,
 		Some(dir) => {
 			let mut dirs:Vec<(String, String)> = Vec::new();
@@ -72,11 +74,15 @@ fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Option<Ve
 				dirs.push((new_path, fname.clone()));
 				return None;
 			}).collect();
-			dirs.iter().for_each(|(path, name)| {
-				let result = search_dir(&path, search_term, show_subpath);
+			
+			#[async_recursion]
+			async fn search_iter(list:&mut Vec<(String, String)>, path:&str, name:&str, search_term: &str, show_subpath:bool) -> () {
+				let result = search_dir(&path, search_term, show_subpath).await;
+				let result = result.unwrap();
 				if result.is_none() {
 					return;
 				}
+
 				result.unwrap().iter().for_each(|item| {
 					if !show_subpath {
 						list.push(item.clone());
@@ -91,10 +97,14 @@ fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Option<Ve
 					};
 					list.push(item);
 				});
-			});
+			}
+			for (a, b) in dirs.iter() {
+				search_iter(&mut list, &a, &b, search_term, show_subpath).await;
+			};
 			Some(list)
 		}
-	}
+	};
+	Ok(maybe)
 }
 
 fn main() {
