@@ -1,8 +1,9 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
-export async function read_dir(dir_path: string): Promise<DirectoryList> {
+export async function read_dir(dir_path: string, cfg?: DirReadFilters): Promise<DirectoryList> {
 	return await invoke("read_dir", {
 		dirPath: dir_path,
+		config: cfg,
 	});
 }
 
@@ -15,12 +16,15 @@ export async function search_dir(dir_path: string, search_term: string, show_sub
 }
 
 type DirReadFilters = {
-	searching: string,
-	exclude_files: Array<string>,
-	exclude_paths: Array<string>,
+	searching?: string,
+	exclude_files: string[],
+	exclude_paths: string[],
+	ignore_symlinks?: boolean;
 };
 
-async function filtered_search(dir_path: string, config: DirReadFilters): Promise<DirectoryList> {
+type IdoruDirectory = [string, FileType, string];
+
+async function filtered_search(dir_path: string, config: DirReadFilters): Promise<IdoruDirectory> {
 	return await invoke("filtered_dir_read", {
 		dirPath: dir_path,
 		config

@@ -1,7 +1,17 @@
 use std::{fs, path::Path};
 
+use tauri::utils::config;
+
+#[derive(Debug,serde::Deserialize, serde::Serialize)]
+pub struct DirReadFilters {
+	searching: Option<String>,
+	exclude_files: Vec<String>,
+	exclude_paths: Vec<String>,
+	ignore_symlinks: Option<bool>,
+}
+
 #[tauri::command]
-pub async fn read_dir(dir_path: &str) -> Result<Option<Vec<(String, String)>>, ()> {
+pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<Option<Vec<(String, String)>>, ()> {
 	let result = fs::read_dir(dir_path);
 	if result.is_err() {
 		println!("{:?}", result);
@@ -20,10 +30,31 @@ pub async fn read_dir(dir_path: &str) -> Result<Option<Vec<(String, String)>>, (
 					Ok(x) => x,
 			};
 			let ftype = if meta.is_file() {
+				if config.is_some() {
+					let cfg = config.as_ref().unwrap();
+					if cfg.exclude_files.contains(&fname) {
+						return None;
+					}
+				}
+				
 				String::from("file")
 			} else if meta.is_dir() {
+				if config.is_some() {
+					let cfg = config.as_ref().unwrap();
+					if cfg.exclude_paths.contains(&fname) {
+						return None;
+					}
+				}
+				
 				String::from("directory")
 			} else if meta.is_symlink() {
+				if config.is_some() {
+					let cfg = config.as_ref().unwrap();
+					if let Some(true) = cfg.ignore_symlinks {
+						return None;
+					}
+				}
+				
 				String::from("symlink")
 			} else {
 				String::from("unknown")
@@ -37,16 +68,8 @@ pub async fn read_dir(dir_path: &str) -> Result<Option<Vec<(String, String)>>, (
 	return Ok(Some(dir));
 }
 
-#[derive(Debug,serde::Deserialize, serde::Serialize)]
-pub struct DirReadFilters {
-	searching: String,
-	exclude_files: Vec<String>,
-	exclude_paths: Vec<String>,
-	ignore_symlinks: Option<bool>,
-}
-
 #[tauri::command]
-pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Result<Option<Vec<(String, String)>>, ()> {
+pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Result<Option<Vec<(String, String, String)>>, ()> {
 	let base_path = dir_path.clone();
 	let mut paths = vec![dir_path];
 	let mut dir:Vec<_> = Vec::new();
@@ -60,39 +83,38 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 			continue;
 		}
 		let result = result.unwrap();
-		let local_dir:Vec<(String, String)> = result.into_iter().filter_map(|f| {
+		let local_dir:Vec<_> = result.into_iter().filter_map(|f| {
 			if f.is_err() {
 				return None;
 			}
 			let entry = f.unwrap();
-			let mut fname:String = match entry.file_name().into_string() {
+			let base_name:String = match entry.file_name().into_string() {
 				Err(_) => return None,
-				Ok(base_name) => {
-					if dir_path == &base_path {
-						base_name
-					} else {
-						match Path::new(&dir_path).join(&base_name).into_os_string().into_string() {
-							Err(_) => return None,
-							Ok(x) => x,
-						}
-					}
-				},
+				Ok(x) => x,
+			};
+			let mut fname = if dir_path == &base_path {
+				base_name.clone()
+			} else {
+				match Path::new(&dir_path).join(&base_name).into_os_string().into_string() {
+					Err(_) => return None,
+					Ok(x) => x,
+				}
 			};
 			let meta = match entry.metadata() {
 					Err(_) => return None,
 					Ok(x) => x,
 			};
 			let ftype = if meta.is_file() {
-				if config.exclude_files.contains(&fname) {
+				if config.exclude_files.contains(&fname) || config.exclude_files.contains(&base_name) {
 					return None;
 				}
-				if !fname.contains(&config.searching) {
+				if config.searching.is_some() && !fname.contains(config.searching.as_ref().unwrap()) {
 					return None;
 				}
 
 				String::from("file")
 			} else if meta.is_dir() {
-				if config.exclude_paths.contains(&fname) {
+				if config.exclude_paths.contains(&fname) || config.exclude_paths.contains(&base_name) {
 					return None;
 				}
 				if &base_path == dir_path {
@@ -107,7 +129,7 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 				if config.ignore_symlinks == Some(true) {
 					return None;
 				}
-				if !fname.contains(&config.searching) {
+				if config.searching.is_some() && !fname.contains(config.searching.as_ref().unwrap()) {
 					return None;
 				}
 
@@ -118,16 +140,16 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 			if fname.contains("\\") {
 				fname = fname.replace("\\", "/");
 			}
-			Some((fname, ftype))
+			Some((fname, ftype, base_name))
 		}).collect();
 		
 		paths.remove(0);
 		
-		for (a, b) in local_dir.iter() {
+		for (a, b, c) in local_dir.iter() {
 			if b.clone() == String::from("directory") {
 				paths.push(a.to_owned());
 			} else {
-				dir.push((a.to_owned(), b.to_owned()));
+				dir.push((a.to_owned(), b.to_owned(), c.to_owned()));
 			}
 		}
 	}

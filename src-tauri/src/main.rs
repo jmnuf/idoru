@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod base_dir_reading;
 use base_dir_reading::*;
-use std::{fs, path::Path};
+use std::path::Path;
 use async_recursion::async_recursion;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -18,7 +18,7 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 #[async_recursion]
 async fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Result<Option<Vec<(String, String)>>, ()> {
-	let dir = read_dir(&dir_path).await?;
+	let dir = read_dir(&dir_path, None).await?;
 	let maybe = match dir {
 		None => None,
 		Some(dir) => {

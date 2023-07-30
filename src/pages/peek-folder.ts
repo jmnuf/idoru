@@ -14,7 +14,7 @@ class PeekFolder {
 	descriptors: FileDesc[];
 
 	constructor() {
-		this.base_directory = "C:/Users/josem/Documents/code/tauri/idoru/src";
+		this.base_directory = "C:/Users/josem/Documents/code/tauri/idoru";
 		this.directory = this.base_directory;
 		this._search_term = "";
 		this.descriptors = [];
@@ -26,7 +26,7 @@ class PeekFolder {
 	set search_term(v: string) {
 		this._search_term = v;
 		this.on_search_request(null, this).then(() => {
-			console.log(this.descriptors);
+			console.dir(this.descriptors);
 		});
 	}
 
@@ -77,12 +77,9 @@ class PeekFolder {
 	get template() {
 		return PeekFolder.template;
 	}
-	async on_submit(
-		event: SubmitEvent | null,
-		model: PeekFolder
-	) {
-		if (event) {
-			event.preventDefault();
+
+	async do_search(set_base_dir: boolean, model: PeekFolder = this) {
+		if (set_base_dir) {
 			model.base_directory = model.directory;
 		}
 		if (!model.directory) {
@@ -92,7 +89,10 @@ class PeekFolder {
 		const dir = model.directory.endsWith("/")
 			? model.directory.substring(0, model.directory.length - 1)
 			: model.directory;
-		const descriptors = await api.read_dir(model.directory);
+		const descriptors = await api.read_dir(model.directory, {
+			exclude_files: [],
+			exclude_paths: [".git", "node_modules", "target", "build", ".vscode"],
+		});
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of descriptors) {
@@ -144,6 +144,17 @@ class PeekFolder {
 			...files
 		);
 		model.directory = dir.lastIndexOf("/") < 0 ? `${dir}/` : dir;
+	}
+
+	async on_submit(
+		event: SubmitEvent | null,
+		model: PeekFolder
+	) {
+		if (event) {
+			event.preventDefault();
+			model.base_directory = model.directory;
+		}
+		model.do_search(true, model);
 	};
 
 	async on_path_button_clicked(
@@ -163,21 +174,26 @@ class PeekFolder {
 			return;
 		}
 		model.directory = path;
-		await model.on_submit(null, model);
+		await model.do_search(false, model);
 	}
 
 	async on_search_request(event: SubmitEvent | null, model: PeekFolder) {
 		event?.preventDefault();
 		if (model.search_term.trim().length < 2) {
-			await model.on_submit(null, model);
+			await model.do_search(false, model);
 			return;
 		}
 		// console.log(arguments);
 		const dir = model.directory;
 		const qry = model.search_term;
-		console.log("searching in:", dir);
-		console.log("searching for:", qry);
-		const search_result = await api.search_dir(dir, qry);
+		// console.log("searching in:", dir);
+		// console.log("searching for:", qry);
+		// const search_result = await api.search_dir(dir, qry);
+		const search_result = await api.filtered_search(dir, {
+			searching: qry,
+			exclude_files: [],
+			exclude_paths: [".git", ".vscode", "node_modules", "build", "target"]
+		});
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of search_result) {
