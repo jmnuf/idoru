@@ -1,7 +1,5 @@
 use std::{fs, path::Path};
 
-use tauri::utils::config;
-
 #[derive(Debug,serde::Deserialize, serde::Serialize)]
 pub struct DirReadFilters {
 	searching: Option<String>,
