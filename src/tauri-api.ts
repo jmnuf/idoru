@@ -15,7 +15,7 @@ export async function search_dir(dir_path: string, search_term: string, show_sub
 	});
 }
 
-type DirReadFilters = {
+export type DirReadFilters = {
 	searching?: string,
 	exclude_files: string[],
 	exclude_paths: string[],

@@ -1,4 +1,4 @@
-import { FileType, api } from "../tauri-api";
+import { DirReadFilters, FileType, api } from "../tauri-api";
 
 type FileDesc = {
 	name: string;
@@ -10,24 +10,27 @@ type FileDesc = {
 class PeekFolder {
 	base_directory: string;
 	directory: string;
-	private _search_term: string;
+	private search_config: Required<DirReadFilters>;
 	descriptors: FileDesc[];
 
 	constructor() {
-		this.base_directory = "C:/Users/josem/Documents/code/tauri/idoru";
+		this.base_directory = "./";
 		this.directory = this.base_directory;
-		this._search_term = "";
+		this.search_config = {
+			searching: "",
+			exclude_files: [],
+			exclude_paths: [".git", "node_modules", ".vscode"],
+			ignore_symlinks: true,
+		};
 		this.descriptors = [];
 	}
 
 	get search_term() {
-		return this._search_term;
+		return this.search_config.searching;
 	}
 	set search_term(v: string) {
-		this._search_term = v;
-		this.on_search_request(null, this).then(() => {
-			console.dir(this.descriptors);
-		});
+		this.search_config.searching = v;
+		this.on_search_request(null, this);
 	}
 
 	get found_files() {
@@ -89,10 +92,11 @@ class PeekFolder {
 		const dir = model.directory.endsWith("/")
 			? model.directory.substring(0, model.directory.length - 1)
 			: model.directory;
-		const descriptors = await api.read_dir(model.directory, {
-			exclude_files: [],
-			exclude_paths: [".git", "node_modules", "target", "build", ".vscode"],
-		});
+		const descriptors = await api.read_dir(model.directory, model.search_config);
+		// const descriptors = await api.read_dir(model.directory, {
+		// 	exclude_files: [],
+		// 	exclude_paths: [".git", "node_modules", "target", "build", ".vscode"],
+		// });
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of descriptors) {
@@ -128,10 +132,11 @@ class PeekFolder {
 				return;
 			}
 			p = p.substring(0, index);
-			if (p.length < model.base_directory.length) return;
 			p = p.includes("/") ? p : `${p}/`;
+			if (p.length < model.base_directory.length) return;
 			return p;
 		})(model.directory);
+
 		prev && directories.unshift({
 			name: "..",
 			type: "directory",
@@ -148,13 +153,17 @@ class PeekFolder {
 
 	async on_submit(
 		event: SubmitEvent | null,
-		model: PeekFolder
+		_model: PeekFolder
 	) {
 		if (event) {
 			event.preventDefault();
-			model.base_directory = model.directory;
+			this.base_directory = this.directory;
 		}
-		model.do_search(true, model);
+		if (this.search_term.trim().length >= 2) {
+			await this.on_search_request(null, this);
+			return;
+		}
+		this.do_search(true, this);
 	};
 
 	async on_path_button_clicked(
@@ -185,15 +194,17 @@ class PeekFolder {
 		}
 		// console.log(arguments);
 		const dir = model.directory;
-		const qry = model.search_term;
+		// const qry = model.search_term;
+		const qry = model.search_config;
 		// console.log("searching in:", dir);
 		// console.log("searching for:", qry);
 		// const search_result = await api.search_dir(dir, qry);
-		const search_result = await api.filtered_search(dir, {
-			searching: qry,
-			exclude_files: [],
-			exclude_paths: [".git", ".vscode", "node_modules", "build", "target"]
-		});
+		// const search_result = await api.filtered_search(dir, {
+		// 	searching: qry,
+		// 	exclude_files: [],
+		// 	exclude_paths: [".git", ".vscode", "node_modules", "build", "target"]
+		// });
+		const search_result = await api.filtered_search(dir, qry);
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of search_result) {

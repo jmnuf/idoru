@@ -13,7 +13,7 @@ const norishre = missNorishre({
 		model: async () => {
 			const { PageModel } = await import("./pages/peek-folder");
 			const model = PageModel();
-			model.on_submit(null, model);
+			model.do_search(false);
 			return model;
 		}
 	}
