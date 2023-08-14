@@ -1,4 +1,7 @@
 import { invoke } from "@tauri-apps/api/tauri";
+import viteSvg from "/src/assets/vite.svg";
+import tauriSvg from "/src/assets/tauri.svg";
+import typescriptSvg from "/src/assets/typescript.svg";
 
 class IndexPage {
 	greeting_name: string;
@@ -24,18 +27,18 @@ class IndexPage {
 		
 		<div class="flex justify-center mb-4">
 			<a href="https://vitejs.dev" target="_blank">
-				<img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
+				<img src="${viteSvg}" class="logo vite" alt="Vite logo" />
 			</a>
 			<a href="https://tauri.app" target="_blank">
 				<img
-					src="/src/assets/tauri.svg"
+					src="${tauriSvg}"
 					class="logo tauri"
 					alt="Tauri logo"
 				/>
 			</a>
 			<a href="https://www.typescriptlang.org/docs" target="_blank">
 				<img
-					src="/src/assets/typescript.svg"
+					src="${typescriptSvg}"
 					class="logo"
 					alt="typescript logo"
 				/>

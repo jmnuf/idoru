@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod base_dir_reading;
 use base_dir_reading::*;
-use std::path::Path;
+use std::{path::Path, fs};
 use async_recursion::async_recursion;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -14,6 +14,21 @@ fn greet(name: &str) -> String {
 	format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+#[tauri::command]
+fn relative_to_full_path(relative_path: String) -> Option<String> {
+	match fs::canonicalize(relative_path) {
+		Ok(path) => {
+			match path.as_os_str().to_owned().into_string() {
+				Err(_) => None,
+				Ok(path) => Some(path),
+			}
+		},
+		Err(err) => {
+			eprintln!("{:?}", err);
+			None
+		}
+	}
+}
 
 #[tauri::command]
 #[async_recursion]
@@ -79,6 +94,7 @@ fn main() {
 			read_dir,
 			search_dir,
 			filtered_dir_read,
+			relative_to_full_path,
 		]).run(tauri::generate_context!())
 		.expect("error while running tauri application");
 }
