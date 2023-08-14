@@ -7,10 +7,10 @@ settings:
 dependencies:
   '@jmnuf/norishre':
     specifier: ^0.3.0
-    version: 0.3.0(@peasy-lib/peasy-ui@0.9.46)
+    version: 0.3.0(@peasy-lib/peasy-ui@0.9.47)
   '@peasy-lib/peasy-ui':
-    specifier: ^0.9.46
-    version: 0.9.46
+    specifier: ^0.9.47
+    version: 0.9.47
   '@tauri-apps/api':
     specifier: ^1.4.0
     version: 1.4.0
@@ -240,12 +240,12 @@ packages:
     dev: true
     optional: true
 
-  /@jmnuf/norishre@0.3.0(@peasy-lib/peasy-ui@0.9.46):
+  /@jmnuf/norishre@0.3.0(@peasy-lib/peasy-ui@0.9.47):
     resolution: {integrity: sha512-v8/eRbsu2NK+gqCmnKgOfFjO/z3Kz2aHjxc1CrWAJHeebh13d7isqxXq4TctymwFWWjKc4/e5nQgFZPR0cG/dQ==}
     peerDependencies:
       '@peasy-lib/peasy-ui': ^0.9.38
     dependencies:
-      '@peasy-lib/peasy-ui': 0.9.46
+      '@peasy-lib/peasy-ui': 0.9.47
     dev: false
 
   /@jridgewell/gen-mapping@0.3.3:
@@ -303,8 +303,8 @@ packages:
       fastq: 1.15.0
     dev: true
 
-  /@peasy-lib/peasy-ui@0.9.46:
-    resolution: {integrity: sha512-ryxlt7O1rcXPfv/9vnCHsQt5T5wKmOGGtdvAI9RdCtHiFTZ7Wzg56kU2lw46m8FIgMKPZ2a+qeZqQSE5cW5WSg==}
+  /@peasy-lib/peasy-ui@0.9.47:
+    resolution: {integrity: sha512-ejVEiLaoyZqStmcIVUbRwQiWcJCITu3u2YLRJZ3f4AgtX9g69fs+6yvvPuM3P4eMZHrKewcE5r6LRqZmdKaVVQ==}
     engines: {node: '>=14.17.0'}
     dev: false
 

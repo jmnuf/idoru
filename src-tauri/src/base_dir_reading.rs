@@ -1,4 +1,5 @@
 use std::{fs, path::Path};
+use std::collections::VecDeque;
 
 #[derive(Debug,serde::Deserialize, serde::Serialize)]
 pub struct DirReadFilters {
@@ -69,15 +70,15 @@ pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<
 #[tauri::command]
 pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Result<Option<Vec<(String, String, String)>>, ()> {
 	let base_path = dir_path.clone();
-	let mut paths = vec![dir_path];
-	let mut dir:Vec<_> = Vec::new();
+	let mut paths = VecDeque::new(); //vec![dir_path];
+	let mut filtered_contents:Vec<_> = Vec::new();
+	paths.push_front(dir_path);
 	
-	while let Some(dir_path) = paths.first() {
+	while let Some(dir_path) = paths.pop_front() {
 		let result = fs::read_dir(dir_path.clone());
 		if result.is_err() {
 			println!("{:?}", result);
 			println!("{}", dir_path);
-			paths.remove(0);
 			continue;
 		}
 		let result = result.unwrap();
@@ -90,7 +91,7 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 				Err(_) => return None,
 				Ok(x) => x,
 			};
-			let mut fname = if dir_path == &base_path {
+			let mut fname = if dir_path == base_path {
 				base_name.clone()
 			} else {
 				match Path::new(&dir_path).join(&base_name).into_os_string().into_string() {
@@ -115,7 +116,7 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 				if config.exclude_paths.contains(&fname) || config.exclude_paths.contains(&base_name) {
 					return None;
 				}
-				if &base_path == dir_path {
+				if base_path == dir_path {
 					fname = match Path::new(&base_path).join(&fname).into_os_string().into_string() {
 						Err(_) => return None,
 						Ok(x) => x,
@@ -141,16 +142,14 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 			Some((fname, ftype, base_name))
 		}).collect();
 		
-		paths.remove(0);
-		
 		for (a, b, c) in local_dir.iter() {
 			if b.clone() == String::from("directory") {
-				paths.push(a.to_owned());
+				paths.push_back(a.to_owned());
 			} else {
-				dir.push((a.to_owned(), b.to_owned(), c.to_owned()));
+				filtered_contents.push((a.to_owned(), b.to_owned(), c.to_owned()));
 			}
 		}
 	}
 
-	return Ok(Some(dir));
+	return Ok(Some(filtered_contents));
 }

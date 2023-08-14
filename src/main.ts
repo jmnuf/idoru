@@ -24,7 +24,7 @@ const norishre = missNorishre({
 			} catch (err) {
 				console.error(err);
 			}
-			model.on_submit(null, model);
+			model.do_search(false);
 			return model;
 		}
 	}

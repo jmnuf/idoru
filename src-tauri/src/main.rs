@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod base_dir_reading;
 use base_dir_reading::*;
+use tauri::Manager;
 use std::{path::Path, fs};
 use async_recursion::async_recursion;
 
