@@ -90,6 +90,11 @@ async fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Res
 
 fn main() {
 	tauri::Builder::default()
+		.setup(|app| {
+			#[cfg(debug_assertions)]
+			app.get_window("main").unwrap().open_devtools();
+			Ok(())
+		})
 		.invoke_handler(tauri::generate_handler![
 			greet,
 			read_dir,
