@@ -1,3 +1,5 @@
+import { BroomImg } from "../components/templating/broom-img";
+import { DragonImg } from "../components/templating/dragon-img";
 import { DirReadFilters, FileType, api } from "../tauri-api";
 
 type FileDesc = {
@@ -240,11 +242,15 @@ class PeekFolder {
 		<h1>Folder Peeker</h1>
 		<form class="row w-full mb-2" \${ submit @=> on_submit }>
 			<input class="w-full" placeholder="Enter a directory..." \${ value <=> directory } />
-			<button type="submit">👀</button>
+			<button type="submit">
+				${DragonImg(30)}
+			</button>
 		</form>
 		<form class="row w-full mb-4" \${ submit @=> on_search_request }>
 			<input class="w-full" placeholder="Search..." \${ value <=> search_term } />
-			<button type="submit">🔍</button>
+			<button type="submit">
+				${BroomImg(30)}
+			</button>
 		</form>
 		<div class="row w-full max-h-full scroll">
 			<ul class="left-ul scroll" \${ === found_files }>
