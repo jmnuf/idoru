@@ -57,7 +57,7 @@ console.log("Found arrow data:", { active_id, params });
 
 norishre.pull_from_quiver(active_id as any, params).then(() => {
 	if (!norishre.pulled_arrow) {
-		setTimeout(load_page, 500);
+		setTimeout(load_page, 100);
 	} else {
 		load_page();
 	}
