@@ -95,10 +95,6 @@ class PeekFolder {
 			? model.directory.substring(0, model.directory.length - 1)
 			: model.directory;
 		const descriptors = await api.read_dir(model.directory, model.search_config);
-		// const descriptors = await api.read_dir(model.directory, {
-		// 	exclude_files: [],
-		// 	exclude_paths: [".git", "node_modules", "target", "build", ".vscode"],
-		// });
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of descriptors) {
@@ -196,16 +192,7 @@ class PeekFolder {
 		}
 		// console.log(arguments);
 		const dir = model.directory;
-		// const qry = model.search_term;
 		const qry = model.search_config;
-		// console.log("searching in:", dir);
-		// console.log("searching for:", qry);
-		// const search_result = await api.search_dir(dir, qry);
-		// const search_result = await api.filtered_search(dir, {
-		// 	searching: qry,
-		// 	exclude_files: [],
-		// 	exclude_paths: [".git", ".vscode", "node_modules", "build", "target"]
-		// });
 		const search_result = await api.filtered_search(dir, qry);
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
