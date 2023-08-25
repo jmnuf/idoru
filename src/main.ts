@@ -55,15 +55,14 @@ const [active_id, params] = norishre.find_arrow_id_by_url();
 
 console.log("Found arrow data:", { active_id, params });
 
-norishre.pull_from_quiver(active_id as any, params).then(() => {
-	if (!norishre.pulled_arrow) {
-		setTimeout(load_page, 100);
-	} else {
-		load_page();
-	}
-});
+norishre.pull_from_quiver(active_id as any, params).then(() => load_page());
 
 async function load_page() {
+	if (!norishre.pulled_arrow) {
+		setTimeout(load_page, 100);
+		return;
+	}
+
 	UI.create(document.body, norishre, norishre.template);
 	console.log("Loaded model for arrow with id", active_id);
 }
