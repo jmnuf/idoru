@@ -21,7 +21,7 @@ class UpdatedOptionsEvent extends CustomEvent<{ excluded_files: string[], exclud
 }
 
 class SearchConfigPopupModel {
-	declare elem: HTMLDialogElement;
+	declare _elem: HTMLDialogElement;
 
 	excluded_files: string[];
 	excluded_folders: string[];
@@ -43,10 +43,20 @@ class SearchConfigPopupModel {
 		];
 	}
 
+	set elem(e: HTMLDialogElement) {
+		this._elem = e;
+		e.close();
+		e.style.display = "none";
+	}
+	get elem() {
+		return this._elem;
+	}
+
 	async _on_submit(
 		submit_event: SubmitEvent,
 		_model: SearchConfigPopupModel
 	) {
+		this._elem.style.display = "none";
 		if (!submit_event.submitter) {
 			console.log("Closed by non-button");
 			return;
@@ -56,6 +66,9 @@ class SearchConfigPopupModel {
 		if (submitter.value != "accept") {
 			return;
 		}
+		this.excluded_files = this.inputs[0].value.trim().split(",").map(x => x.trim());
+		this.excluded_folders = this.inputs[1].value.trim().split(",").map(x => x.trim());
+		this.ignores_symlinks = this.inputs[2].value;
 
 		const event = new UpdatedOptionsEvent(this.excluded_files, this.excluded_folders, this.ignores_symlinks);
 		this.elem.dispatchEvent(event);
@@ -66,22 +79,29 @@ class SearchConfigPopupModel {
 		this.inputs[1].element.value = this.excluded_folders.join(", ");
 		this.inputs[2].element.checked = this.ignores_symlinks;
 		this.elem.showModal();
+		this.elem.style.display = "";
 	}
 
 	close_dialog() {
 		this.elem.close("cancel");
 	}
 
+	on_dialog_closed() {
+		window.queueMicrotask(() => {
+			this.elem.style.display = "none";
+		});
+	}
+
 	get template() {
 		return SearchConfigPopupModel.template;
 	}
 
-	static readonly template = `<dialog \${ ==> elem } >
+	static readonly template = `<dialog class="w-1/2 h-1/2 flex flex-col justify-center align-middle" \${ close @=> on_dialog_closed } \${ ==> elem }>
 		<form class="flex flex-col" method="dialog" \${ submit @=> _on_submit }>
 			<div class="flex flex-col-reverse mb-2">
 				<\${ inp === } \${ inp <=* inputs }>
 			</div>
-			<div class="flex flex-row w-full justify-center">
+			<div class="flex flex-row w-full justify-center gap-2">
 				<input type="submit" value="accept" />
 				<input type="submit" value="cancel" />
 			</div>
@@ -350,20 +370,20 @@ class PeekFolder {
 
 	async on_updated_options(event: UpdatedOptionsEvent) {
 		console.log(event);
-		// TODO: update options received by event?
+		this.on_search_request(null, this);
 	}
 
 	static readonly template = `<div class="container mx-auto max-h-full">
-		<h1>Folder Peeker</h1>
+		<h1 class="text-xl font-bold">Folder Peeker</h1>
 		<form class="row w-full mb-2" \${ submit @=> on_submit }>
 			<input class="w-full" placeholder="Enter a directory..." \${ value <=> directory } />
-			<button type="submit">
+			<button type="submit" title="Switch base directory">
 				${DragonImg(30)}
 			</button>
 		</form>
 		<form class="row w-full mb-4" \${ updated_options @=> on_updated_options } \${ submit @=> on_open_configs }>
 			<input class="w-full" placeholder="Search..." \${ value <=> search_term } />
-			<button type="submit">
+			<button type="submit" title="Configure search">
 				${BroomImg(30)}
 			</button>
 			<\${ search_options_dialog === } />
