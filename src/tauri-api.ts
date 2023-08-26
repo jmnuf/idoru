@@ -52,5 +52,8 @@ export const api = {
 	get_file_name,
 };
 
+// @ts-ignore
+window.API = api;
+
 export type FileType = "file" | "directory" | "symlink" | "unknown";
 export type DirectoryList = [string, FileType][];
