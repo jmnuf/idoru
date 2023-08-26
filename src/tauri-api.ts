@@ -31,10 +31,25 @@ async function filtered_search(dir_path: string, config: DirReadFilters): Promis
 	});
 }
 
+async function read_text_file(file_path: string): Promise<string[] | undefined> {
+	const file_contents = await invoke<string[] | undefined>("read_text_file", {
+		filePath: file_path,
+	});
+	return file_contents;
+}
+
+async function get_file_name(file_path: string): Promise<string | undefined> {
+	return await invoke("get_file_name", {
+		filePath: file_path,
+	});
+}
+
 export const api = {
 	read_dir,
 	search_dir,
 	filtered_search,
+	read_text_file,
+	get_file_name,
 };
 
 export type FileType = "file" | "directory" | "symlink" | "unknown";

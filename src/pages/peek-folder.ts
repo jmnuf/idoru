@@ -1,6 +1,7 @@
 import { formInput, type InputModel } from "../components/form";
 import { BroomImg } from "../components/templating/broom-img";
 import { DragonImg } from "../components/templating/dragon-img";
+import { PageChangeEvent } from "../page-change-event";
 import { DirReadFilters, FileType, api } from "../tauri-api";
 
 type FileDesc = {
@@ -110,6 +111,7 @@ class SearchConfigPopupModel {
 }
 
 class PeekFolder {
+	declare private element: HTMLElement;
 	base_directory: string;
 	directory: string;
 	private search_config: Required<DirReadFilters>;
@@ -310,8 +312,24 @@ class PeekFolder {
 		context: { $parent: { $model: PeekFolder; }; }
 	) {
 		const model = context.$parent.$model;
-		const type = target.dataset.ftype;
+		const type = target.dataset.ftype as FileType | undefined;
 		if (!type || type != "directory") {
+			if (type == "file") {
+				const fpath = target.dataset.fpath;
+				if (!fpath || fpath.match(/.*\.(o|a|exe|appimage)/i)) {
+					return;
+				}
+				console.log(
+					await api.read_text_file(fpath)
+				);
+				if (!this.element) {
+					const elem = document.getElementById("peek-folder-page");
+					if (!elem) return;
+					this.element = elem;
+				}
+				const file_name = await api.get_file_name(fpath) ?? fpath;
+				PageChangeEvent.emitNew(this.element, "fileViewer", { "query": { file_name, file_path: fpath }, path: {} });
+			}
 			return;
 		}
 		const path = target.dataset.fpath;
@@ -373,7 +391,7 @@ class PeekFolder {
 		this.on_search_request(null, this);
 	}
 
-	static readonly template = `<div class="container mx-auto max-h-full">
+	static readonly template = `<div id="peek-folder-page" class="container mx-auto max-h-full" \${ ==> element }>
 		<h1 class="text-xl font-bold">Folder Peeker</h1>
 		<form class="row w-full mb-2" \${ submit @=> on_submit }>
 			<input class="w-full" placeholder="Enter a directory..." \${ value <=> directory } />

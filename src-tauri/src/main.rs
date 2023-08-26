@@ -1,7 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod base_dir_reading;
+mod file_reading;
+
 use base_dir_reading::*;
+use file_reading::*;
+
 use tauri::Manager;
 use std::{path::Path, fs};
 use async_recursion::async_recursion;
@@ -101,6 +105,8 @@ fn main() {
 			search_dir,
 			filtered_dir_read,
 			relative_to_full_path,
+			read_text_file,
+			get_file_name,
 		]).run(tauri::generate_context!())
 		.expect("error while running tauri application");
 }
