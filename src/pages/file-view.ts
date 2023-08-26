@@ -18,7 +18,7 @@ class FileView {
 	}
 	static readonly template = `<div class="w-full h-full">
 		<h1>\${ file_name }</h2>
-		<div contenteditable="true" class="w-[95%] h-[95%] overflow-y-auto px-6 my-2">
+		<div contenteditable="false" class="w-[95%] h-[95%] overflow-y-auto px-6 my-2">
 			<pre class="mx-0 mt-0 mb-1 [tab-size:2]" \${ line <=* file_lines }>\${ line }</pre>
 		</div>
 	</div>`;
