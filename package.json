@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@jmnuf/norishre": "^0.3.0",
-    "@peasy-lib/peasy-ui": "^0.9.47",
+    "@peasy-lib/peasy-ui": "^0.9.50",
     "@tauri-apps/api": "^1.4.0"
   },
   "devDependencies": {
