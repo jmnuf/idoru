@@ -24,7 +24,7 @@ export type DirReadFilters = {
 
 type IdoruDirectory = [string, FileType, string];
 
-async function filtered_search(dir_path: string, config: DirReadFilters): Promise<IdoruDirectory> {
+async function filtered_search(dir_path: string, config: DirReadFilters): Promise<IdoruDirectory[]> {
 	return await invoke("filtered_dir_read", {
 		dirPath: dir_path,
 		config
