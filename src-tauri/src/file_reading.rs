@@ -4,13 +4,19 @@ use std::{fs::File, io::{BufReader, BufRead}, path::PathBuf};
 pub async fn read_text_file(file_path: &str) -> Result<Option<Vec<String>>, ()> {
 	let file = match File::open(file_path) {
     Ok(f) => f,
-    Err(_) => return Ok(None),
+    Err(e) => {
+			eprintln!("{:?}", e);
+			return Ok(None);
+		},
 	};
 	let reader = BufReader::new(file);
 	let mut lines = Vec::<String>::new();
 	
 	for line in reader.lines() {
 		if line.is_err() {
+			unsafe {
+				eprintln!("{:?}", line.unwrap_err_unchecked());
+			}
 			return Ok(None);
 		}
 		let line = line.unwrap();
