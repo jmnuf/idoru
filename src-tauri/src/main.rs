@@ -106,6 +106,7 @@ fn main() {
 			filtered_dir_read,
 			relative_to_full_path,
 			read_text_file,
+			is_file_openable_as_text,
 			get_file_name,
 		]).run(tauri::generate_context!())
 		.expect("error while running tauri application");

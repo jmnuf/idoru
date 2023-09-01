@@ -44,10 +44,17 @@ async function get_file_name(file_path: string): Promise<string | undefined> {
 	});
 }
 
+async function is_openable_as_text(file_path: string): Promise<boolean> {
+	return await invoke<boolean>("is_file_openable_as_text", {
+		filePath: file_path,
+	});
+}
+
 export const api = {
 	read_dir,
 	search_dir,
 	filtered_search,
+	is_openable_as_text,
 	read_text_file,
 	get_file_name,
 };

@@ -71,7 +71,7 @@ norishre.quiver.fileViewer.on_pulled = async function on_FileView_pulled({ model
 		}
 		const fname = typeof params.query.file_name == "string" ? params.query.file_name : fpath.substring(Math.max(fpath.lastIndexOf("\\"), fpath.lastIndexOf("/")));
 		console.log("Opened file:", fname);
-		norishre.models.fileViewer!.use_file(fname, contents ?? []);
+		norishre.models.fileViewer!.open_file(fname, fpath);
 	}
 };
 export type AppRouter = typeof norishre;

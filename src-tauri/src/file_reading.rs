@@ -1,4 +1,4 @@
-use std::{fs::File, io::{BufReader, BufRead}, path::PathBuf};
+use std::{fs::File, io::{BufReader, BufRead, Read}, path::PathBuf};
 
 #[tauri::command]
 pub async fn read_text_file(file_path: &str) -> Result<Option<Vec<String>>, ()> {
@@ -24,6 +24,20 @@ pub async fn read_text_file(file_path: &str) -> Result<Option<Vec<String>>, ()> 
 	}
 	
 	return Ok(Some(lines));
+}
+
+#[tauri::command]
+pub fn is_file_openable_as_text(file_path: &str) -> bool {
+	match File::open(file_path) {
+		Ok(mut f) => {
+			let mut buffer = String::new();
+			match f.read_to_string(&mut buffer) {
+				Ok(_) => true,
+				Err(_) => false,
+			}
+		},
+		Err(_) => false,
+	}
 }
 
 #[tauri::command]
