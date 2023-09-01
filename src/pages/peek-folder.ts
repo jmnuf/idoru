@@ -353,24 +353,26 @@ class PeekFolder {
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of search_result) {
-			const name = desc[0];
+			const name = desc[2];
 			const type = desc[1];
+			const path = desc[0];
 			if (type == "unknown") {
 				continue;
 			}
+			const short_path = "." + (path.startsWith(model.base_directory) ? path.substring(model.base_directory.length) : "/" + path);
 			switch (type) {
 				case "file": {
 					files.push({
-						name, type,
-						short_path: name,
-						full_path: `${dir}/${name}`,
+						name: name, type,
+						short_path,
+						full_path: path,
 					});
 				} break;
 				case "directory": {
 					directories.push({
-						name, type,
-						short_path: `${name}/`,
-						full_path: `${dir}/${name}`,
+						name: name, type,
+						short_path: `${short_path}/`,
+						full_path: path,
 					});
 				} break;
 			}
