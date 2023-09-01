@@ -11,7 +11,7 @@
 		"wsl-build": "PATH=$(/usr/bin/printenv PATH | /usr/bin/perl -ne 'print join(\":\", grep { !/\\/mnt\\/[a-z]/ } split(/:/));') tauri build"
   },
   "dependencies": {
-    "@jmnuf/norishre": "^0.3.0",
+    "@jmnuf/norishre": "^0.3.1",
     "@peasy-lib/peasy-ui": "^0.9.50",
     "@tauri-apps/api": "^1.4.0"
   },
