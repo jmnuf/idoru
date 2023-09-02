@@ -1,3 +1,4 @@
+import { UI } from "@peasy-lib/peasy-ui";
 import { formInput, type InputModel } from "../components/form";
 import { BroomImg } from "../components/templating/broom-img";
 import { DragonImg } from "../components/templating/dragon-img";
@@ -112,6 +113,7 @@ class SearchConfigPopupModel {
 
 class PeekFolder {
 	declare private element: HTMLElement;
+	declare private elements_div: HTMLDivElement;
 	base_directory: string;
 	directory: string;
 	private search_config: Required<DirReadFilters>;
@@ -319,9 +321,6 @@ class PeekFolder {
 				if (!fpath || fpath.match(/.*\.(o|a|exe|appimage)/i)) {
 					return;
 				}
-				console.log(
-					await api.read_text_file(fpath)
-				);
 				if (!this.element) {
 					const elem = document.getElementById("peek-folder-page");
 					if (!elem) return;
@@ -338,6 +337,14 @@ class PeekFolder {
 		}
 		model.directory = path;
 		await model.do_search(false, model);
+		if (!model.elements_div) return;
+		UI.queue(function () {
+			model.elements_div.scrollTop = model.elements_div.scrollHeight;
+			model.elements_div.scrollLeft = 0;
+			UI.queue(function () {
+				model.elements_div.scrollTo({ behavior: "smooth", top: 0 });
+			});
+		});
 	}
 
 	async on_search_request(event: SubmitEvent | null, model: PeekFolder) {
@@ -409,7 +416,7 @@ class PeekFolder {
 			<\${ search_options_dialog === } />
 		</form>
 		<div class="row w-full max-h-full scroll">
-			<ul class="left-ul scroll" \${ === found_files }>
+			<ul class="left-ul scroll" \${ ==> elements_div } \${ === found_files }>
 				<li \${ file <=* descriptors }>
 					<button data-fpath="\${file.full_path}" data-ftype="\${file.type}" \${ click @=> on_path_button_clicked }>
 						\${ file.short_path }
