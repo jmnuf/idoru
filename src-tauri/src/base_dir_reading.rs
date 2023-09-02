@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::{fs, path::Path};
 use std::collections::VecDeque;
 
@@ -7,6 +8,47 @@ pub struct DirReadFilters {
 	exclude_files: Vec<String>,
 	exclude_paths: Vec<String>,
 	ignore_symlinks: Option<bool>,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize, PartialEq, Eq, Clone)]
+pub enum IdoruFileType {
+	File,
+	Directory,
+	Symlink,
+	Unknown,
+}
+
+impl PartialOrd for IdoruFileType {
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		let order = match (self, other) {
+			(IdoruFileType::File, IdoruFileType::Directory) => Ordering::Less,
+			(IdoruFileType::File, IdoruFileType::Symlink) => Ordering::Equal,
+			(IdoruFileType::File, IdoruFileType::Unknown) => Ordering::Greater,
+			(IdoruFileType::Symlink, IdoruFileType::File) => Ordering::Equal,
+			(IdoruFileType::Symlink, IdoruFileType::Directory) => Ordering::Less,
+			(IdoruFileType::Symlink, IdoruFileType::Unknown) => Ordering::Greater,
+			(IdoruFileType::Directory, _) => Ordering::Greater,
+			(IdoruFileType::Unknown, _) => Ordering::Less,
+			_ => Ordering::Equal
+		};
+		return Some(order);
+	}
+}
+
+impl Ord for IdoruFileType {
+	fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+		match (self, other) {
+			(IdoruFileType::File, IdoruFileType::Directory) => Ordering::Less,
+			(IdoruFileType::File, IdoruFileType::Symlink) => Ordering::Equal,
+			(IdoruFileType::File, IdoruFileType::Unknown) => Ordering::Greater,
+			(IdoruFileType::Symlink, IdoruFileType::File) => Ordering::Equal,
+			(IdoruFileType::Symlink, IdoruFileType::Directory) => Ordering::Less,
+			(IdoruFileType::Symlink, IdoruFileType::Unknown) => Ordering::Greater,
+			(IdoruFileType::Directory, _) => Ordering::Greater,
+			(IdoruFileType::Unknown, _) => Ordering::Less,
+			_ => Ordering::Equal
+		}
+	}
 }
 
 #[tauri::command]
@@ -68,7 +110,7 @@ pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<
 }
 
 #[tauri::command]
-pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Result<Option<Vec<(String, String, String)>>, ()> {
+pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Result<Option<Vec<(String, IdoruFileType, String)>>, ()> {
 	let base_path = dir_path.clone();
 	let mut paths = VecDeque::new(); //vec![dir_path];
 	let mut filtered_contents:Vec<_> = Vec::new();
@@ -111,7 +153,7 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 					return None;
 				}
 
-				String::from("file")
+				IdoruFileType::File
 			} else if meta.is_dir() {
 				if config.exclude_paths.contains(&fname) || config.exclude_paths.contains(&base_name) {
 					return None;
@@ -123,7 +165,7 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 					};
 				}
 
-				String::from("directory")
+				IdoruFileType::Directory
 			} else if meta.is_symlink() {
 				if config.ignore_symlinks == Some(true) {
 					return None;
@@ -132,9 +174,9 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 					return None;
 				}
 
-				String::from("symlink")
+				IdoruFileType::Symlink
 			} else {
-				String::from("unknown")
+				IdoruFileType::Unknown
 			};
 			if fname.contains("\\") {
 				fname = fname.replace("\\", "/");
@@ -143,7 +185,7 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 		}).collect();
 		
 		for (a, b, c) in local_dir.iter() {
-			if b.clone() == String::from("directory") {
+			if b.clone() == IdoruFileType::Directory {
 				paths.push_back(a.to_owned());
 			} else {
 				filtered_contents.push((a.to_owned(), b.to_owned(), c.to_owned()));
@@ -151,5 +193,12 @@ pub async fn filtered_dir_read(dir_path: String, config: DirReadFilters) -> Resu
 		}
 	}
 
+	if config.searching.is_none() || config.searching.unwrap().is_empty() {
+		filtered_contents.sort_by_cached_key(|x| x.0.clone());
+		filtered_contents.sort_by(|a, b| {
+			return a.1.cmp(&b.1);
+		});
+	}
+	
 	return Ok(Some(filtered_contents));
 }
