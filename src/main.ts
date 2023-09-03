@@ -1,9 +1,8 @@
 import { ExtraParams, missNorishre } from "@jmnuf/norishre";
-import { UI } from "@peasy-lib/peasy-ui";
+import { UI, UIView } from "@peasy-lib/peasy-ui";
 import create_navbar from "./components/navbar";
 import { invoke } from "@tauri-apps/api/tauri";
 import { PageChangeEvent } from "./page-change-event";
-import type { FileViewModel } from "./pages/file-view";
 import { api } from "./tauri-api";
 import { KeyOf } from "@jmnuf/norishre/dist/base-types";
 
@@ -104,19 +103,9 @@ norishre.quiver.fileViewer.on_pulled = on_file_handler_pulled;
 norishre.quiver.fileEditor.on_pulled = on_file_handler_pulled;
 
 export type AppRouter = typeof norishre;
+export type AppQuiver = AppRouter["quiver"];
+export type AppArrows = Exclude<KeyOf<AppRouter["quiver"]>, `%${string}%`>;
 
-const navbar = create_navbar(norishre);
-navbar.add_page("index", "Home");
-navbar.add_page("peekFolder", "Peeker");
-navbar.add_page("fileViewer", "Reader");
-navbar.add_page("fileEditor", "Writer");
-UI.create(document.body, navbar, navbar.template);
-
-const [active_id, params] = norishre.find_arrow_id_by_url();
-
-console.log("Found arrow data:", { active_id, params });
-
-// @ts-expect-error page-change is an irregular event with a custom event
 document.addEventListener("page-change", (ev: PageChangeEvent) => {
 	if (ev.defaultPrevented) {
 		return;
@@ -128,14 +117,53 @@ document.addEventListener("page-change", (ev: PageChangeEvent) => {
 	norishre.pull_from_quiver(arrow, params);
 });
 
-norishre.pull_from_quiver(active_id as any, params).then(() => load_page());
+class App {
+	private norishre: AppRouter;
+	private navbar: ReturnType<typeof create_navbar<AppQuiver>>;
+	private view?: UIView;
+	private view_is_attached: boolean;
 
-async function load_page() {
-	if (!norishre.pulled_arrow) {
-		setTimeout(load_page, 100);
-		return;
+	constructor(router: AppRouter) {
+		this.norishre = router;
+		this.navbar = create_navbar(this.norishre);
+		this.view_is_attached = false;
 	}
 
-	UI.create(document.body, norishre, norishre.template);
-	console.log("Loaded model for arrow with id", active_id);
+	async init() {
+		if (this.view) {
+			return;
+		}
+		const [active_id, params] = norishre.find_arrow_id_by_url();
+		await norishre.pull_from_quiver(active_id as AppArrows, params);
+		console.log("Pulling initial arrow data:", { active_id, params });
+
+		this.navbar.add_page("index", "Home");
+		this.navbar.add_page("peekFolder", "Peeker");
+		this.navbar.add_page("fileViewer", "Reader");
+		this.navbar.add_page("fileEditor", "Writer");
+
+		this.view_is_attached = false;
+		this.view = UI.create(document.body, this, App.template);
+		await this.view.attached;
+		this.view_is_attached = true;
+	}
+
+	get is_mounted() {
+		return this.view != null && this.view_is_attached;
+	}
+
+	get template() {
+		return App.template;
+	}
+	static readonly template = `<idoru-app class="block h-[100vh]">
+	<\${ navbar === }/>
+	<\${ norishre === }/>
+</idoru-app>`;
 }
+
+const app = new App(norishre);
+app.init();
+
+export {
+	app
+};
