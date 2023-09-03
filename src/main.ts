@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { PageChangeEvent } from "./page-change-event";
 import type { FileViewModel } from "./pages/file-view";
 import { api } from "./tauri-api";
+import { KeyOf } from "@jmnuf/norishre/dist/base-types";
 
 const norishre = missNorishre({
 	index: {
@@ -40,20 +41,42 @@ const norishre = missNorishre({
 		}
 	},
 	fileViewer: {
-		path: "/file",
+		path: "/reader",
 		model: async () => {
 			const { PageModel } = await import("./pages/file-view");
 			const model = PageModel();
 			return model;
 		},
 	},
+	fileEditor: {
+		path: "/editor",
+		model: async () => {
+			const { PageModel } = await import("./pages/file-edit");
+			const model = PageModel();
+			return model;
+		}
+	}
 });
 
-// @ts-expect-error on_pulled is still not actually available through missNorishre fn
-norishre.quiver.fileViewer.on_pulled = async function on_FileView_pulled({ model, params }: { model: FileViewModel, params: ExtraParams | undefined; }) {
-	console.log("Opening File Viewer");
+type FileHandlerModel = {
+	open_file(file_name: string, file_path: string): Promise<void>;
+};
+
+async function on_file_handler_pulled({ model, params }: { model: FileHandlerModel, params: ExtraParams; }) {
+	if (!model) {
+		const arrow_id = norishre.find_arrow_id_by_url()[0] as KeyOf<typeof norishre.models>;
+		if (norishre.is_model_loading(arrow_id)) {
+			await norishre.loadDrawnArrow();
+		}
+		// @ts-expect-error
+		model = norishre.models[arrow_id];
+		console.log(arrow_id, model);
+	}
+	const model_name = Object.getPrototypeOf(model).constructor.name;
+	console.log("Opening", model_name);
+
 	if (!params) {
-		console.warn("Not updating file viewer cause of lack of params");
+		console.warn(`Not updating ${model_name} cause of lack of params`);
 		return;
 	}
 	if (params.query && "file_path" in params.query) {
@@ -70,16 +93,23 @@ norishre.quiver.fileViewer.on_pulled = async function on_FileView_pulled({ model
 			console.error("Failed to read file:", fpath);
 		}
 		const fname = typeof params.query.file_name == "string" ? params.query.file_name : fpath.substring(Math.max(fpath.lastIndexOf("\\"), fpath.lastIndexOf("/")));
-		console.log("Opened file:", fname);
-		norishre.models.fileViewer!.open_file(fname, fpath);
+		console.log("Opening file: ", fname);
+		model.open_file(fname, fpath);
 	}
-};
+}
+
+// @ts-expect-error on_pulled is still not actually available through missNorishre fn
+norishre.quiver.fileViewer.on_pulled = on_file_handler_pulled;
+// @ts-expect-error on_pulled is still not actually available through missNorishre fn
+norishre.quiver.fileEditor.on_pulled = on_file_handler_pulled;
+
 export type AppRouter = typeof norishre;
 
 const navbar = create_navbar(norishre);
 navbar.add_page("index", "Home");
 navbar.add_page("peekFolder", "Peeker");
-navbar.add_page("fileViewer", "File");
+navbar.add_page("fileViewer", "Reader");
+navbar.add_page("fileEditor", "Writer");
 UI.create(document.body, navbar, navbar.template);
 
 const [active_id, params] = norishre.find_arrow_id_by_url();
