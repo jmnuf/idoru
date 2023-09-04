@@ -1,4 +1,5 @@
 import { api } from "../tauri-api";
+import { os } from "@tauri-apps/api";
 
 class FileEditorPage {
 	file_name: string = "\\0";
@@ -29,7 +30,11 @@ class FileEditorPage {
 	}
 
 	get displayed_contents() {
-		return this.contents.join("\n");
+		return this.contents.join(os.EOL);
+	}
+
+	set displayed_contents(value: string) {
+		this.contents = value.split(os.EOL);
 	}
 
 	get template() {
@@ -39,10 +44,11 @@ class FileEditorPage {
 		<h1>\${ file_name }</h1>
 		<section class="w-[95%] h-[95%] overflow-y-auto px-6 my-2">
 			<pre
-				class="mx-0 mt-0 mb-1 [tab-size:2] break-words whitespace-pre-wrap"
+				class="mx-0 mt-0 mb-1 [tab-size:2] break-words whitespace-pre-wrap outline-none outline-0"
 				contenteditable=true
+				\${ innerText <=> displayed_contents }
 				\${ === could_open_file }
-			>\${ displayed_contents }</pre>
+			></pre>
 		</section>
 	</div>`;
 }
