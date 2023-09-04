@@ -2,7 +2,7 @@ import { UI } from "@peasy-lib/peasy-ui";
 import { formInput, type InputModel } from "../components/form";
 import { BroomImg } from "../components/templating/broom-img";
 import { DragonImg } from "../components/templating/dragon-img";
-import { PageChangeEvent } from "../page-change-event";
+import { PageChangeEvent } from "../events/page-change-event";
 import { DirReadFilters, FileType, api } from "../tauri-api";
 
 type FileDesc = {

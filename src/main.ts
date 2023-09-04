@@ -2,7 +2,6 @@ import { ExtraParams, missNorishre } from "@jmnuf/norishre";
 import { UI, UIView } from "@peasy-lib/peasy-ui";
 import create_navbar from "./components/navbar";
 import { invoke } from "@tauri-apps/api/tauri";
-import { PageChangeEvent } from "./page-change-event";
 import { api } from "./tauri-api";
 import { KeyOf } from "@jmnuf/norishre/dist/base-types";
 
@@ -106,7 +105,7 @@ export type AppRouter = typeof norishre;
 export type AppQuiver = AppRouter["quiver"];
 export type AppArrows = Exclude<KeyOf<AppRouter["quiver"]>, `%${string}%`>;
 
-document.addEventListener("page-change", (ev: PageChangeEvent) => {
+document.addEventListener("idoru:page-change", (ev) => {
 	if (ev.defaultPrevented) {
 		return;
 	}
