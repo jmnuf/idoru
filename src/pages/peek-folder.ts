@@ -4,6 +4,7 @@ import { BroomImg } from "../components/templating/broom-img";
 import { DragonImg } from "../components/templating/dragon-img";
 import { PageChangeEvent } from "../events/page-change-event";
 import { DirReadFilters, FileType, api } from "../tauri-api";
+import { FileOpenedEvent } from "../events/file-opened-event";
 
 type FileDesc = {
 	name: string;
@@ -327,6 +328,7 @@ class PeekFolder {
 					this.element = elem;
 				}
 				const file_name = await api.get_file_name(fpath) ?? fpath;
+				FileOpenedEvent.emitNew(fpath);
 				PageChangeEvent.emitNew(this.element, "fileViewer", { "query": { file_name, file_path: fpath }, path: {} });
 			}
 			return;
