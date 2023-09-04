@@ -59,6 +59,7 @@ const Norishre = () => missNorishre({
 type FileHandlerModel = {
 	file_path: string;
 	open_file(file_name: string, file_path: string): Promise<void>;
+	update_contents(): Promise<void>;
 };
 
 
@@ -152,6 +153,7 @@ class App {
 				model.open_file(fname, fpath);
 				return;
 			}
+			model.update_contents();
 			console.warn(`Not updating ${model_name} cause of lack of params`);
 			return;
 		}

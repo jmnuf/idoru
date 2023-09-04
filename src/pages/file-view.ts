@@ -70,6 +70,16 @@ class FileViewPage {
 		this.checking_file = true;
 	}
 
+	async update_contents() {
+		if (!this.could_open_file) return;
+		const contents = await api.read_text_file(this.file_path);
+		if (!contents) {
+			console.error("TODO: Tell user that we failed to reload file contents");
+			return;
+		}
+		await this.contents_renderer.parse_contents(contents);
+	}
+
 	async open_file(file_name: string, file_path: string) {
 		this.file_name = file_name;
 		this.file_path = file_path;
@@ -102,6 +112,10 @@ class FileViewPage {
 
 	get is_loading() {
 		return this.checking_file || this.contents_renderer?.is_loading;
+	}
+
+	get could_open_file() {
+		return !this.checking_file && this.contents_renderer && !(this.contents_renderer instanceof FailedToOpen);
 	}
 
 	get loading_text() {

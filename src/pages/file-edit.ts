@@ -25,6 +25,16 @@ class FileEditorPage {
 		});
 	}
 
+	async update_contents() {
+		if (!this.could_open_file) return;
+		const contents = await api.read_text_file(this.file_path);
+		if (!contents) {
+			console.error("TODO: Tell user that we failed to reload file contents");
+			return;
+		}
+		this.contents = contents;
+	}
+
 	async open_file(file_name: string, file_path: string) {
 		this.file_name = file_name;
 		this.file_path = file_path;
