@@ -2,11 +2,28 @@ import { api } from "../tauri-api";
 import { os } from "@tauri-apps/api";
 
 class FileEditorPage {
+	declare private element: HTMLDivElement;
 	file_name: string = "\\0";
 	file_path: string = "";
 	private checking_file: boolean = false;
 	private could_open_file: boolean = false;
 	private contents: string[] = [];
+
+	constructor() {
+		document.addEventListener("keypress", async ev => {
+			if (!this.could_open_file || this.file_path.length < 1 || this.checking_file) {
+				return;
+			}
+			if (!ev.ctrlKey || ev.altKey) {
+				return;
+			}
+			if (ev.code !== "KeyS") {
+				return;
+			}
+			const saved = await api.write_to_file(this.file_path, this.displayed_contents);
+			console.error(`TODO: Tell user that we ${saved ? "succesfully saved" : "failed to save"} file`);
+		});
+	}
 
 	async open_file(file_name: string, file_path: string) {
 		this.file_name = file_name;
@@ -29,6 +46,10 @@ class FileEditorPage {
 		this.could_open_file = true;
 	}
 
+	get loaded_file() {
+		return !this.checking_file && this.could_open_file && this.file_path.length > 0;
+	}
+
 	get displayed_contents() {
 		return this.contents.join(os.EOL);
 	}
@@ -40,7 +61,7 @@ class FileEditorPage {
 	get template() {
 		return FileEditorPage.template;
 	}
-	static readonly template = `<div class="w-full h-full">
+	static readonly template = `<div class="w-full h-full" \${ ==> element }>
 		<h1>\${ file_name }</h1>
 		<section class="w-[95%] h-[95%] overflow-y-auto px-6 my-2">
 			<pre

@@ -50,12 +50,20 @@ async function is_openable_as_text(file_path: string): Promise<boolean> {
 	});
 }
 
+async function write_to_file(file_path: string, file_contents: string): Promise<boolean> {
+	return await invoke<boolean>("write_to_file", {
+		filePath: file_path,
+		contents: file_contents,
+	});
+}
+
 export const api = {
 	read_dir,
 	search_dir,
 	filtered_search,
 	is_openable_as_text,
 	read_text_file,
+	write_to_file,
 	get_file_name,
 };
 

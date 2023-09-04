@@ -2,9 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod base_dir_reading;
 mod file_reading;
+mod file_writing;
 
 use base_dir_reading::*;
 use file_reading::*;
+use file_writing::*;
 
 use tauri::Manager;
 use std::{path::Path, fs};
@@ -106,6 +108,7 @@ fn main() {
 			filtered_dir_read,
 			relative_to_full_path,
 			read_text_file,
+			write_to_file,
 			is_file_openable_as_text,
 			get_file_name,
 		]).run(tauri::generate_context!())
