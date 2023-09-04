@@ -154,7 +154,6 @@ class App {
 				return;
 			}
 			model.update_contents();
-			console.warn(`Not updating ${model_name} cause of lack of params`);
 			return;
 		}
 		if (params.query && "file_path" in params.query) {
