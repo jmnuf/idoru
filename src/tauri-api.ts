@@ -57,6 +57,19 @@ async function write_to_file(file_path: string, file_contents: string): Promise<
 	});
 }
 
+async function get_last_file() {
+	return await invoke<{ file_name: string, file_contents: string[] } | null>("get_last_file");
+}
+
+async function check_for_last_file() {
+	return await invoke<boolean>("check_saved_last_file");
+}
+
+(async () => {
+	console.log("last checked app file", await get_last_file());
+	console.log("state file exists", await check_for_last_file());
+})()
+
 export const api = {
 	read_dir,
 	search_dir,
