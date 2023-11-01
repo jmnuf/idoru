@@ -65,6 +65,13 @@ async function check_for_last_file() {
 	return await invoke<boolean>("check_saved_last_file");
 }
 
+async function set_last_file(file_name: string, file_contents: string[]) {
+	return await invoke<boolean>("set_last_file", {
+		fileName: file_name,
+		fileContents: file_contents,
+	});
+}
+
 (async () => {
 	console.log("last checked app file", await get_last_file());
 	console.log("state file exists", await check_for_last_file());
@@ -73,6 +80,11 @@ async function check_for_last_file() {
 export const api = {
 	read_dir,
 	search_dir,
+	
+	get_last_file,
+	check_for_last_file,
+	set_last_file,
+
 	filtered_search,
 	is_openable_as_text,
 	read_text_file,
