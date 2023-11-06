@@ -57,14 +57,14 @@ fn relative_to_full_path(relative_path: String) -> Option<String> {
 
 #[tauri::command]
 #[async_recursion]
-async fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Result<Option<Vec<(String, String)>>, ()> {
+async fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Result<Option<Vec<(String, IdoruFileType)>>, ()> {
 	let dir = read_dir(&dir_path, None).await?;
 	let maybe = match dir {
 		None => None,
 		Some(dir) => {
 			let mut dirs:Vec<(String, String)> = Vec::new();
 			let mut list:Vec<_> = dir.iter().filter_map(|(fname, ftype)| {
-				if ftype != "directory" {
+				if ftype != &IdoruFileType::Directory {
 					if fname.contains(search_term) {
 						return Some((fname.clone(), ftype.clone()));
 					} else {
@@ -81,7 +81,7 @@ async fn search_dir(dir_path: &str, search_term: &str, show_subpath:bool) -> Res
 			}).collect();
 			
 			#[async_recursion]
-			async fn search_iter(list:&mut Vec<(String, String)>, path:&str, name:&str, search_term: &str, show_subpath:bool) -> () {
+			async fn search_iter(list:&mut Vec<(String, IdoruFileType)>, path:&str, name:&str, search_term: &str, show_subpath:bool) -> () {
 				let result = search_dir(&path, search_term, show_subpath).await;
 				let result = result.unwrap();
 				if result.is_none() {

@@ -52,14 +52,14 @@ impl Ord for IdoruFileType {
 }
 
 #[tauri::command]
-pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<Option<Vec<(String, String)>>, ()> {
+pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<Option<Vec<(String, IdoruFileType)>>, ()> {
 	let result = fs::read_dir(dir_path);
 	if result.is_err() {
 		println!("{:?}", result);
 		return Ok(None);
 	}
 	let result = result.unwrap();
-	let dir:Vec<(String, String)> = result.into_iter().filter_map(|f| {
+	let dir:Vec<(String, IdoruFileType)> = result.into_iter().filter_map(|f| {
 		if f.is_ok() {
 			let entry = f.unwrap();
 			let fname:String = match entry.file_name().into_string() {
@@ -78,7 +78,7 @@ pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<
 					}
 				}
 				
-				String::from("file")
+				IdoruFileType::File
 			} else if meta.is_dir() {
 				if config.is_some() {
 					let cfg = config.as_ref().unwrap();
@@ -87,7 +87,7 @@ pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<
 					}
 				}
 				
-				String::from("directory")
+                IdoruFileType::Directory
 			} else if meta.is_symlink() {
 				if config.is_some() {
 					let cfg = config.as_ref().unwrap();
@@ -96,9 +96,9 @@ pub async fn read_dir(dir_path: &str, config: Option<DirReadFilters>) -> Result<
 					}
 				}
 				
-				String::from("symlink")
+                IdoruFileType::Symlink
 			} else {
-				String::from("unknown")
+                IdoruFileType::Unknown
 			};
 			Some((fname, ftype))
 		} else {
