@@ -1,5 +1,8 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
+export type FileType = "File" | "Directory" | "Symlink" | "Unknown";
+export type DirectoryList = [string, FileType][];
+
 export async function read_dir(dir_path: string, cfg?: DirReadFilters): Promise<DirectoryList> {
 	return await invoke("read_dir", {
 		dirPath: dir_path,
@@ -95,5 +98,3 @@ export const api = {
 // @ts-ignore
 window.API = api;
 
-export type FileType = "file" | "directory" | "symlink" | "unknown";
-export type DirectoryList = [string, FileType][];

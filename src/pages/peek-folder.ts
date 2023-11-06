@@ -185,7 +185,7 @@ class PeekFolder {
 	get file_paths() {
 		const paths: string[] = [];
 		for (const desc of this.descriptors) {
-			if (desc.type == "directory") {
+			if (desc.type == "Directory") {
 				paths.push(`./${desc.name}/`);
 			} else {
 				paths.push(`./${desc.name}`);
@@ -243,18 +243,18 @@ class PeekFolder {
 		for (const desc of descriptors) {
 			const name = desc[0];
 			const type = desc[1];
-			if (type == "unknown") {
+			if (type == "Unknown") {
 				continue;
 			}
 			switch (type) {
-				case "file": {
+				case "File": {
 					files.push({
 						name, type,
 						short_path: name,
 						full_path: `${dir}/${name}`,
 					});
 				} break;
-				case "directory": {
+				case "Directory": {
 					directories.push({
 						name, type,
 						short_path: `${name}/`,
@@ -280,7 +280,7 @@ class PeekFolder {
 
 		prev && directories.unshift({
 			name: "..",
-			type: "directory",
+			type: "Directory",
 			short_path: "../",
 			full_path: prev,
 		});
@@ -316,8 +316,8 @@ class PeekFolder {
 	) {
 		const model = context.$parent.$model;
 		const type = target.dataset.ftype as FileType | undefined;
-		if (!type || type != "directory") {
-			if (type == "file") {
+		if (!type || type != "Directory") {
+			if (type == "File") {
 				const fpath = target.dataset.fpath;
 				if (!fpath || fpath.match(/.*\.(o|a|exe|appimage)/i)) {
 					return;
@@ -365,19 +365,19 @@ class PeekFolder {
 			const name = desc[2];
 			const type = desc[1];
 			const path = desc[0];
-			if (type == "unknown") {
+			if (type == "Unknown") {
 				continue;
 			}
 			const short_path = "." + (path.startsWith(model.base_directory) ? path.substring(model.base_directory.length) : "/" + path);
 			switch (type) {
-				case "file": {
+				case "File": {
 					files.push({
 						name: name, type,
 						short_path,
 						full_path: path,
 					});
 				} break;
-				case "directory": {
+				case "Directory": {
 					directories.push({
 						name: name, type,
 						short_path: `${short_path}/`,
