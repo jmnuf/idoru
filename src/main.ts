@@ -97,6 +97,11 @@ class App {
 		this.navbar.add_page("fileViewer", "Reader");
 		this.navbar.add_page("fileEditor", "Writer");
 
+		const last_file = await api.get_last_file();
+		if (last_file) {
+			this.file_path = last_file.file_path;
+		}
+
 		this.view_is_attached = false;
 		this.view = UI.create(document.body, this, App.template);
 		await this.view.attached;
