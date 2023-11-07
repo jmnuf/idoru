@@ -8,15 +8,15 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-		"wsl-build": "PATH=$(/usr/bin/printenv PATH | /usr/bin/perl -ne 'print join(\":\", grep { !/\\/mnt\\/[a-z]/ } split(/:/));') tauri build"
+    "wsl-build": "PATH=$(/usr/bin/printenv PATH | /usr/bin/perl -ne 'print join(\":\", grep { !/\\/mnt\\/[a-z]/ } split(/:/));') tauri build"
   },
   "dependencies": {
     "@jmnuf/norishre": "^0.3.1",
-    "@peasy-lib/peasy-ui": "^0.9.50",
-    "@tauri-apps/api": "^1.4.0"
+    "@peasy-lib/peasy-ui": "^0.9.57",
+    "@tauri-apps/api": "^1.5.1"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.4.0",
+    "@tauri-apps/cli": "^1.5.6",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.25",
     "tailwindcss": "^3.3.2",
