@@ -18,7 +18,6 @@ class PlainTextRenderer extends Renderer {
 	async parse_contents(contents: string[]): Promise<void> {
 		this._loading = true;
 		this.file_lines = contents;
-		await new Promise(res => setTimeout(res, 1_500));
 		this._loading = false;
 	}
 
@@ -58,6 +57,8 @@ class FailedToOpen extends Renderer {
 	</div>`;
 }
 
+const NULL_FILE = "<Null File Pointer>";
+
 class FileViewPage {
 	private file_name: string;
 	private file_path: string;
@@ -65,7 +66,7 @@ class FileViewPage {
 	declare private contents_renderer: Renderer;
 
 	constructor() {
-		this.file_name = "<Null File Pointer>";
+		this.file_name = NULL_FILE;
 		this.file_path = "";
 		this.checking_file = true;
 	}
@@ -73,14 +74,14 @@ class FileViewPage {
 	async update_contents() {
 		if (!this.could_open_file) return;
 		const contents = await api.read_text_file(this.file_path);
-		if (!contents) {
+		if (contents == null) {
 			console.error("TODO: Tell user that we failed to reload file contents");
 			return;
 		}
 		await this.contents_renderer.parse_contents(contents);
 	}
 
-	async open_file(file_name: string, file_path: string) {
+	async open_file(file_name: string, file_path: string, update_last_file:boolean = true) {
 		this.file_name = file_name;
 		this.file_path = file_path;
 		this.checking_file = true;
@@ -105,6 +106,9 @@ class FileViewPage {
 			this.contents_renderer = new FailedToOpen();
 			return;
 		}
+		if (update_last_file) {
+			void api.set_last_file(this.file_name, contents, file_path);
+		}
 		void renderer.parse_contents(contents);
 		this.checking_file = false;
 		this.contents_renderer = renderer;
@@ -125,10 +129,30 @@ class FileViewPage {
 		return `Loading: ${this.file_name}`;
 	}
 
+	private async on_mount() {
+		if (this.file_name != NULL_FILE) {
+			return;
+		}
+		// Fetch global file
+		const last_file = await api.get_last_file();
+		if (!last_file) {
+			return;
+		}
+		await this.open_file(last_file.file_name, last_file.file_path, false);
+	}
+
+	private on_unmount() {}
+
+	// @ts-ignore
+	private set pui_view(view: { attached: Promise<any>, detached: Promise<any> }) {
+		view.attached.then(() => this.on_mount());
+		view.detached.then(() => this.on_unmount());
+	}
+
 	get template() {
 		return FileViewPage.template;
 	}
-	static readonly template = `<div class="w-full h-full">
+	static readonly template = `<div class="w-full h-full" \${ ==> element:pui_view }>
 		<h1>\${ file_name }</h2>
 		<div contenteditable="false" class="w-[95%] h-[95%] overflow-y-auto px-6 my-2" \${ !== is_loading }>
 			<article \${ !== is_loading }>

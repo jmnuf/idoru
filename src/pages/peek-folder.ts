@@ -238,6 +238,7 @@ class PeekFolder {
 			? model.directory.substring(0, model.directory.length - 1)
 			: model.directory;
 		const descriptors = await api.read_dir(model.directory, model.search_config);
+		console.log(descriptors);
 		const directories: FileDesc[] = [];
 		const files: FileDesc[] = [];
 		for (const desc of descriptors) {

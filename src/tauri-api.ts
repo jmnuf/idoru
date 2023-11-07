@@ -60,18 +60,25 @@ async function write_to_file(file_path: string, file_contents: string): Promise<
 	});
 }
 
+type LastSavedFileInfo = {
+	file_name: string;
+	file_contents: string[];
+	file_path: string;
+};
+
 async function get_last_file() {
-	return await invoke<{ file_name: string, file_contents: string[] } | null>("get_last_file");
+	return await invoke<LastSavedFileInfo | null>("get_last_file");
 }
 
 async function check_for_last_file() {
 	return await invoke<boolean>("check_saved_last_file");
 }
 
-async function set_last_file(file_name: string, file_contents: string[]) {
+async function set_last_file(file_name: string, file_contents: string[], file_path: string) {
 	return await invoke<boolean>("set_last_file", {
 		fileName: file_name,
 		fileContents: file_contents,
+		filePath: file_path,
 	});
 }
 

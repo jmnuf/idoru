@@ -142,8 +142,7 @@ class App {
 			model = this.norishre.models[arrow_id];
 			console.log(arrow_id, model);
 		}
-		const model_name = Object.getPrototypeOf(model).constructor.name;
-		console.log("Opening", model_name);
+		// const model_name = Object.getPrototypeOf(model).constructor.name;
 
 		if (!params) {
 			if (this.file_path.length > 0 && model.file_path != this.file_path) {

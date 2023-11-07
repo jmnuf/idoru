@@ -26,6 +26,7 @@ pub struct AppState {
 pub struct AppFile {
     file_name: String,
     file_contents: Vec<String>,
+    file_path: String,
 }
 
 type ManagedState<'a> = tauri::State<'a, ManagedAppState>;
@@ -125,13 +126,13 @@ fn get_last_file(mstate: tauri::State<ManagedAppState>) -> Option<AppFile> {
 }
 
 #[tauri::command]
-fn set_last_file(file_name: String, file_contents: Vec<String>, app_handle: tauri::AppHandle, mstate: tauri::State<ManagedAppState>) -> bool {
+fn set_last_file(file_name: String, file_contents: Vec<String>, file_path: String, app_handle: tauri::AppHandle, mstate: tauri::State<ManagedAppState>) -> bool {
     {
         let mut state = match mstate.0.lock() {
             Err(_) => return false,
             Ok(s) => s,
         };
-        state.last_file = Some(AppFile { file_name, file_contents });
+        state.last_file = Some(AppFile { file_name, file_contents, file_path });
     };
     let paths = app_handle.path_resolver();
     match paths.app_data_dir() {

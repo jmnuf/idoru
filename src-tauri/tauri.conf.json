@@ -23,6 +23,9 @@
 			},
 			"os": {
 				"all": true
+			},
+			"globalShortcut": {
+				"all": true
 			}
     },
     "bundle": {
